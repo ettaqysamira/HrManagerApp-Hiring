@@ -1,0 +1,641 @@
+import React, { useState, useCallback } from 'react';
+import { SidebarProvider } from '../../components/navigation/Sidebar';
+import Sidebar from '../../components/navigation/Sidebar';
+import Header from '../../components/navigation/Header';
+import Breadcrumb from '../../components/navigation/Breadcrumb';
+import QuickActionButton from '../../components/navigation/QuickActionButton';
+import FilterSidebar from './components/FilterSidebar';
+import SearchBar from './components/SearchBar';
+import ToolbarActions from './components/ToolbarActions';
+import EmployeeTable from './components/EmployeeTable';
+import EmployeeDetailsPanel from './components/EmployeeDetailsPanel';
+import QuickEditModal from './components/QuickEditModal';
+import PaginationControls from './components/PaginationControls';
+
+const EmployeeManagement = () => {
+  const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [showQuickEdit, setShowQuickEdit] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [filters, setFilters] = useState({
+    departments: [],
+    statuses: [],
+    locations: []
+  });
+
+  const mockEmployees = [
+  {
+    id: 1,
+    employeeId: "EMP001",
+    name: "Sophie Martin",
+    username: "smartin",
+    password: "Sophie2023!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1a9e8814c-1763296696290.png",
+    avatarAlt: "Professional headshot of woman with brown hair in business attire smiling at camera",
+    department: "Technologie",
+    position: "Développeur Senior",
+    contractStatus: "CDI",
+    manager: "Jean Dupont",
+    startDate: "15/01/2023",
+    status: "Actif",
+    email: "sophie.martin@company.fr",
+    phone: "+33 6 12 34 56 78",
+    birthDate: "12/05/1990",
+    address: "45 Rue de la République, 75001 Paris",
+    ssn: "1 90 05 75 123 456 78",
+    endDate: null,
+    salary: "65 000 €"
+  },
+  {
+    id: 2,
+    employeeId: "EMP002",
+    name: "Marc Dubois",
+    username: "mdubois",
+    password: "Marc2022!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c272a7f3-1763293622213.png",
+    avatarAlt: "Professional headshot of man with short dark hair wearing navy blue suit and tie",
+    department: "Marketing",
+    position: "Chef de Projet Marketing",
+    contractStatus: "CDI",
+    manager: "Marie Rousseau",
+    startDate: "10/03/2022",
+    status: "Actif",
+    email: "marc.dubois@company.fr",
+    phone: "+33 6 23 45 67 89",
+    birthDate: "23/08/1988",
+    address: "12 Avenue des Champs, 69002 Lyon",
+    ssn: "1 88 08 69 234 567 89",
+    endDate: null,
+    salary: "58 000 €"
+  },
+  {
+    id: 3,
+    employeeId: "EMP003",
+    name: "Claire Lefebvre",
+    username: "clefebvre",
+    password: "Claire2021!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1b5600450-1763294005133.png",
+    avatarAlt: "Professional headshot of woman with blonde hair in white blouse smiling warmly",
+    department: "Ressources Humaines",
+    position: "Responsable RH",
+    contractStatus: "CDI",
+    manager: "Pierre Moreau",
+    startDate: "05/06/2021",
+    status: "Actif",
+    email: "claire.lefebvre@company.fr",
+    phone: "+33 6 34 56 78 90",
+    birthDate: "15/11/1985",
+    address: "78 Boulevard Saint-Michel, 13001 Marseille",
+    ssn: "2 85 11 13 345 678 90",
+    endDate: null,
+    salary: "62 000 €"
+  },
+  {
+    id: 4,
+    employeeId: "EMP004",
+    name: "Thomas Bernard",
+    username: "tbernard",
+    password: "Thomas2024!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1bce4e112-1763296717744.png",
+    avatarAlt: "Professional headshot of man with glasses and brown hair in gray business suit",
+    department: "Finance",
+    position: "Analyste Financier",
+    contractStatus: "CDD",
+    manager: "Sophie Martin",
+    startDate: "20/09/2024",
+    status: "Période d\'Essai",
+    email: "thomas.bernard@company.fr",
+    phone: "+33 6 45 67 89 01",
+    birthDate: "08/03/1992",
+    address: "23 Rue Victor Hugo, 75015 Paris",
+    ssn: "1 92 03 75 456 789 01",
+    endDate: "20/09/2025",
+    salary: "52 000 €"
+  },
+  {
+    id: 5,
+    employeeId: "EMP005",
+    name: "Julie Petit",
+    username: "jpetit",
+    password: "Julie2020!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_19b7f77ca-1763293657165.png",
+    avatarAlt: "Professional headshot of woman with red hair in elegant black blazer with confident expression",
+    department: "Ventes",
+    position: "Directrice Commerciale",
+    contractStatus: "CDI",
+    manager: "Marc Dubois",
+    startDate: "12/02/2020",
+    status: "En Congé",
+    email: "julie.petit@company.fr",
+    phone: "+33 6 56 78 90 12",
+    birthDate: "30/07/1987",
+    address: "56 Cours Lafayette, 69003 Lyon",
+    ssn: "2 87 07 69 567 890 12",
+    endDate: null,
+    salary: "72 000 €"
+  },
+  {
+    id: 6,
+    employeeId: "EMP006",
+    name: "Antoine Roux",
+    username: "aroux",
+    password: "Antoine2023!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1f7128937-1763299826636.png",
+    avatarAlt: "Professional headshot of man with short blonde hair in light blue shirt smiling professionally",
+    department: "Technologie",
+    position: "Développeur Full Stack",
+    contractStatus: "CDI",
+    manager: "Jean Dupont",
+    startDate: "18/11/2023",
+    status: "Actif",
+    email: "antoine.roux@company.fr",
+    phone: "+33 6 67 89 01 23",
+    birthDate: "25/12/1991",
+    address: "89 Rue de la Liberté, 75011 Paris",
+    ssn: "1 91 12 75 678 901 23",
+    endDate: null,
+    salary: "60 000 €"
+  },
+  {
+    id: 7,
+    employeeId: "EMP007",
+    name: "Isabelle Moreau",
+    username: "imoreau",
+    password: "Isabelle2022!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_17faa8e7a-1763295754680.png",
+    avatarAlt: "Professional headshot of woman with dark curly hair in burgundy blazer with warm smile",
+    department: "Marketing",
+    position: "Responsable Communication",
+    contractStatus: "CDI",
+    manager: "Marie Rousseau",
+    startDate: "07/04/2022",
+    status: "Actif",
+    email: "isabelle.moreau@company.fr",
+    phone: "+33 6 78 90 12 34",
+    birthDate: "14/09/1989",
+    address: "34 Place Bellecour, 69002 Lyon",
+    ssn: "2 89 09 69 789 012 34",
+    endDate: null,
+    salary: "56 000 €"
+  },
+  {
+    id: 8,
+    employeeId: "EMP008",
+    name: "Nicolas Simon",
+    username: "nsimon",
+    password: "Nicolas2021!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_104b2ba5a-1763291760303.png",
+    avatarAlt: "Professional headshot of man with dark hair and beard in charcoal suit with serious expression",
+    department: "Finance",
+    position: "Contrôleur de Gestion",
+    contractStatus: "CDI",
+    manager: "Sophie Martin",
+    startDate: "22/08/2021",
+    status: "Actif",
+    email: "nicolas.simon@company.fr",
+    phone: "+33 6 89 01 23 45",
+    birthDate: "03/06/1986",
+    address: "67 Avenue Foch, 13008 Marseille",
+    ssn: "1 86 06 13 890 123 45",
+    endDate: null,
+    salary: "64 000 €"
+  },
+  {
+    id: 9,
+    employeeId: "EMP009",
+    name: "Camille Laurent",
+    username: "claurent",
+    password: "Camille2024!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_18f555478-1763301305559.png",
+    avatarAlt: "Professional headshot of woman with short brown hair in teal blouse with friendly demeanor",
+    department: "Ressources Humaines",
+    position: "Chargée de Recrutement",
+    contractStatus: "CDD",
+    manager: "Pierre Moreau",
+    startDate: "15/10/2024",
+    status: "Période d\'Essai",
+    email: "camille.laurent@company.fr",
+    phone: "+33 6 90 12 34 56",
+    birthDate: "19/02/1993",
+    address: "12 Rue Nationale, 75013 Paris",
+    ssn: "2 93 02 75 901 234 56",
+    endDate: "15/10/2025",
+    salary: "48 000 €"
+  },
+  {
+    id: 10,
+    employeeId: "EMP010",
+    name: "Olivier Girard",
+    username: "ogirard",
+    password: "Olivier2019!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_14513944f-1763292856103.png",
+    avatarAlt: "Professional headshot of man with gray hair in black suit with distinguished appearance",
+    department: "Ventes",
+    position: "Responsable Grands Comptes",
+    contractStatus: "CDI",
+    manager: "Marc Dubois",
+    startDate: "30/01/2019",
+    status: "Actif",
+    email: "olivier.girard@company.fr",
+    phone: "+33 6 01 23 45 67",
+    birthDate: "11/04/1984",
+    address: "45 Quai Saint-Antoine, 69001 Lyon",
+    ssn: "1 84 04 69 012 345 67",
+    endDate: null,
+    salary: "78 000 €"
+  },
+  {
+    id: 11,
+    employeeId: "EMP011",
+    name: "Emma Bonnet",
+    username: "ebonnet",
+    password: "Emma2023!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_157b8811d-1763297722763.png",
+    avatarAlt: "Professional headshot of woman with long blonde hair in white shirt with bright smile",
+    department: "Technologie",
+    position: "Designer UX/UI",
+    contractStatus: "CDI",
+    manager: "Jean Dupont",
+    startDate: "08/05/2023",
+    status: "Actif",
+    email: "emma.bonnet@company.fr",
+    phone: "+33 6 12 34 56 78",
+    birthDate: "27/10/1994",
+    address: "23 Rue du Commerce, 75015 Paris",
+    ssn: "2 94 10 75 123 456 78",
+    endDate: null,
+    salary: "55 000 €"
+  },
+  {
+    id: 12,
+    employeeId: "EMP012",
+    name: "Lucas Fournier",
+    username: "lfournier",
+    password: "Lucas2024!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1bfef8bd5-1763295388609.png",
+    avatarAlt: "Professional headshot of man with short dark hair in navy suit with confident smile",
+    department: "Marketing",
+    position: "Spécialiste SEO",
+    contractStatus: "Stage",
+    manager: "Marie Rousseau",
+    startDate: "01/09/2024",
+    status: "Actif",
+    email: "lucas.fournier@company.fr",
+    phone: "+33 6 23 45 67 89",
+    birthDate: "05/01/1999",
+    address: "78 Rue de la Paix, 69006 Lyon",
+    ssn: "1 99 01 69 234 567 89",
+    endDate: "31/08/2025",
+    salary: "1 200 €"
+  },
+  {
+    id: 13,
+    employeeId: "EMP013",
+    name: "Léa Mercier",
+    username: "lmercier",
+    password: "Lea2022!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_11ce2eaf1-1763301520465.png",
+    avatarAlt: "Professional headshot of woman with dark hair in elegant gray blazer with professional demeanor",
+    department: "Finance",
+    position: "Comptable",
+    contractStatus: "CDI",
+    manager: "Sophie Martin",
+    startDate: "14/07/2022",
+    status: "Actif",
+    email: "lea.mercier@company.fr",
+    phone: "+33 6 34 56 78 90",
+    birthDate: "22/11/1990",
+    address: "56 Boulevard Longchamp, 13001 Marseille",
+    ssn: "2 90 11 13 345 678 90",
+    endDate: null,
+    salary: "50 000 €"
+  },
+  {
+    id: 14,
+    employeeId: "EMP014",
+    name: "Hugo Blanc",
+    username: "hblanc",
+    password: "Hugo2024!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_122d14b14-1763296664562.png",
+    avatarAlt: "Professional headshot of man with light brown hair in blue shirt with friendly expression",
+    department: "Ventes",
+    position: "Commercial Junior",
+    contractStatus: "CDD",
+    manager: "Marc Dubois",
+    startDate: "03/11/2024",
+    status: "Période d\'Essai",
+    email: "hugo.blanc@company.fr",
+    phone: "+33 6 45 67 89 01",
+    birthDate: "16/08/1995",
+    address: "34 Avenue Montaigne, 75008 Paris",
+    ssn: "1 95 08 75 456 789 01",
+    endDate: "03/11/2025",
+    salary: "42 000 €"
+  },
+  {
+    id: 15,
+    employeeId: "EMP015",
+    name: "Chloé Garnier",
+    username: "cgarnier",
+    password: "Chloe2023!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1985c262f-1763294244026.png",
+    avatarAlt: "Professional headshot of woman with auburn hair in cream blouse with warm professional smile",
+    department: "Ressources Humaines",
+    position: "Assistante RH",
+    contractStatus: "CDI",
+    manager: "Pierre Moreau",
+    startDate: "25/03/2023",
+    status: "Actif",
+    email: "chloe.garnier@company.fr",
+    phone: "+33 6 56 78 90 12",
+    birthDate: "09/04/1992",
+    address: "89 Rue Garibaldi, 69003 Lyon",
+    ssn: "2 92 04 69 567 890 12",
+    endDate: null,
+    salary: "45 000 €"
+  },
+  {
+    id: 16,
+    employeeId: "EMP016",
+    name: "Maxime Faure",
+    username: "mfaure",
+    password: "Maxime2021!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1a77e6824-1763296279560.png",
+    avatarAlt: "Professional headshot of man with dark hair and glasses in black suit with serious professional look",
+    department: "Technologie",
+    position: "Architecte Logiciel",
+    contractStatus: "CDI",
+    manager: "Jean Dupont",
+    startDate: "19/06/2021",
+    status: "Actif",
+    email: "maxime.faure@company.fr",
+    phone: "+33 6 67 89 01 23",
+    birthDate: "13/07/1987",
+    address: "12 Rue de Rivoli, 75004 Paris",
+    ssn: "1 87 07 75 678 901 23",
+    endDate: null,
+    salary: "75 000 €"
+  },
+  {
+    id: 17,
+    employeeId: "EMP017",
+    name: "Sarah Rousseau",
+    username: "srousseau",
+    password: "Sarah2022!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1b15cffae-1763298163663.png",
+    avatarAlt: "Professional headshot of woman with long dark hair in navy blazer with confident professional expression",
+    department: "Marketing",
+    position: "Content Manager",
+    contractStatus: "CDI",
+    manager: "Marie Rousseau",
+    startDate: "11/09/2022",
+    status: "Actif",
+    email: "sarah.rousseau@company.fr",
+    phone: "+33 6 78 90 12 34",
+    birthDate: "28/05/1991",
+    address: "45 Cours Vitton, 69006 Lyon",
+    ssn: "2 91 05 69 789 012 34",
+    endDate: null,
+    salary: "54 000 €"
+  },
+  {
+    id: 18,
+    employeeId: "EMP018",
+    name: "Alexandre Vincent",
+    username: "avincent",
+    password: "Alexandre2020!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_197f1fa7d-1763300617923.png",
+    avatarAlt: "Professional headshot of man with short blonde hair in light gray suit with friendly professional demeanor",
+    department: "Finance",
+    position: "Auditeur Interne",
+    contractStatus: "CDI",
+    manager: "Sophie Martin",
+    startDate: "02/12/2020",
+    status: "Actif",
+    email: "alexandre.vincent@company.fr",
+    phone: "+33 6 89 01 23 45",
+    birthDate: "20/02/1988",
+    address: "67 Rue Paradis, 13006 Marseille",
+    ssn: "1 88 02 13 890 123 45",
+    endDate: null,
+    salary: "68 000 €"
+  },
+  {
+    id: 19,
+    employeeId: "EMP019",
+    name: "Manon Leroy",
+    username: "mleroy",
+    password: "Manon2024!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_18fe7a0b4-1763298887042.png",
+    avatarAlt: "Professional headshot of woman with short dark hair in burgundy blouse with warm smile",
+    department: "Ventes",
+    position: "Assistante Commerciale",
+    contractStatus: "CDD",
+    manager: "Marc Dubois",
+    startDate: "16/10/2024",
+    status: "Actif",
+    email: "manon.leroy@company.fr",
+    phone: "+33 6 90 12 34 56",
+    birthDate: "07/12/1996",
+    address: "23 Boulevard Haussmann, 75009 Paris",
+    ssn: "2 96 12 75 901 234 56",
+    endDate: "16/10/2025",
+    salary: "38 000 €"
+  },
+  {
+    id: 20,
+    employeeId: "EMP020",
+    name: "Julien Morel",
+    username: "jmorel",
+    password: "Julien2023!",
+    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1bfef8bd5-1763295388609.png",
+    avatarAlt: "Professional headshot of man with dark hair and beard in navy blue suit with confident expression",
+    department: "Technologie",
+    position: "DevOps Engineer",
+    contractStatus: "CDI",
+    manager: "Jean Dupont",
+    startDate: "28/04/2023",
+    status: "Actif",
+    email: "julien.morel@company.fr",
+    phone: "+33 6 01 23 45 67",
+    birthDate: "31/03/1989",
+    address: "78 Rue de la République, 69002 Lyon",
+    ssn: "1 89 03 69 012 345 67",
+    endDate: null,
+    salary: "70 000 €"
+  }];
+
+
+  const handleFilterChange = useCallback((type, value, checked) => {
+    if (type === 'reset') {
+      setFilters({ departments: [], statuses: [], locations: [] });
+      return;
+    }
+
+    if (type === 'savedSearch') {
+      console.log('Applying saved search:', value);
+      return;
+    }
+
+    setFilters((prev) => {
+      const key = type === 'department' ? 'departments' : type === 'status' ? 'statuses' : 'locations';
+      const current = prev?.[key] || [];
+
+      if (checked) {
+        return { ...prev, [key]: [...current, value] };
+      } else {
+        return { ...prev, [key]: current?.filter((item) => item !== value) };
+      }
+    });
+  }, []);
+
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev?.key === key && prev?.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  }, []);
+
+  const handleSelectEmployee = useCallback((id) => {
+    setSelectedEmployees((prev) =>
+    prev?.includes(id) ? prev?.filter((empId) => empId !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedEmployees?.length === mockEmployees?.length) {
+      setSelectedEmployees([]);
+    } else {
+      setSelectedEmployees(mockEmployees?.map((emp) => emp?.id));
+    }
+  }, [selectedEmployees?.length, mockEmployees]);
+
+  const handleEmployeeClick = useCallback((employee) => {
+    setSelectedEmployee(employee);
+  }, []);
+
+  const handleQuickEdit = useCallback((employee) => {
+    setEditingEmployee(employee);
+    setShowQuickEdit(true);
+  }, []);
+
+  const handleSaveQuickEdit = useCallback((updatedEmployee) => {
+    console.log('Saving employee:', updatedEmployee);
+    setShowQuickEdit(false);
+    setEditingEmployee(null);
+  }, []);
+
+  const handleBulkAction = useCallback((action) => {
+    console.log('Bulk action:', action, 'for employees:', selectedEmployees);
+  }, [selectedEmployees]);
+
+  const handleExport = useCallback((format) => {
+    console.log('Exporting in format:', format);
+  }, []);
+
+  const handleAddEmployee = useCallback(() => {
+    console.log('Adding new employee');
+  }, []);
+
+  const handleSearch = useCallback((searchTerm) => {
+    console.log('Searching for:', searchTerm);
+  }, []);
+
+  const totalPages = Math.ceil(mockEmployees?.length / pageSize);
+  const paginatedEmployees = mockEmployees?.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen bg-background">
+        <Sidebar />
+        <Header />
+        
+        <main className={`main-content ${isFilterCollapsed ? '' : 'sidebar-collapsed'}`}>
+          <Breadcrumb />
+          
+          <FilterSidebar
+            isCollapsed={isFilterCollapsed}
+            onToggle={() => setIsFilterCollapsed(!isFilterCollapsed)}
+            filters={filters}
+            onFilterChange={handleFilterChange} />
+
+
+          <div className={`transition-all duration-200 ${isFilterCollapsed ? 'ml-0' : 'ml-80'} ${selectedEmployee ? 'mr-96' : 'mr-0'}`}>
+            <div className="p-6">
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold text-foreground mb-2">Gestion des Employés</h1>
+                <p className="text-sm text-muted-foreground">
+                  Gérez et suivez tous les employés de votre organisation
+                </p>
+              </div>
+
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <SearchBar
+                  onSearch={handleSearch}
+                  onFilterToggle={() => setIsFilterCollapsed(!isFilterCollapsed)}
+                  isFilterVisible={!isFilterCollapsed} />
+
+
+                <ToolbarActions
+                  selectedCount={selectedEmployees?.length}
+                  onBulkAction={handleBulkAction}
+                  onExport={handleExport}
+                  onAddEmployee={handleAddEmployee} />
+
+
+                <div className="p-4">
+                  <EmployeeTable
+                    employees={paginatedEmployees}
+                    selectedEmployees={selectedEmployees}
+                    onSelectEmployee={handleSelectEmployee}
+                    onSelectAll={handleSelectAll}
+                    onSort={handleSort}
+                    sortConfig={sortConfig}
+                    onEmployeeClick={handleEmployeeClick}
+                    onQuickEdit={handleQuickEdit} />
+
+                </div>
+
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={mockEmployees?.length}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize} />
+
+              </div>
+            </div>
+          </div>
+
+          <EmployeeDetailsPanel
+            employee={selectedEmployee}
+            onClose={() => setSelectedEmployee(null)} />
+
+
+          {showQuickEdit &&
+          <QuickEditModal
+            employee={editingEmployee}
+            onClose={() => {
+              setShowQuickEdit(false);
+              setEditingEmployee(null);
+            }}
+            onSave={handleSaveQuickEdit} />
+
+          }
+
+          <QuickActionButton />
+        </main>
+      </div>
+    </SidebarProvider>);
+
+};
+
+export default EmployeeManagement;

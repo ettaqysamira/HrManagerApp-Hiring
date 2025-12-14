@@ -25,7 +25,7 @@ const PersonalDetailsForm = ({ initialData, onSave, onCancel }) => {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setModifiedFields(prev => new Set([...prev, field]));
-    
+
     if (errors?.[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -60,19 +60,23 @@ const PersonalDetailsForm = ({ initialData, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSaving(true);
-    setTimeout(() => {
+    setIsSaving(true);
+
+    if (onSave) {
+      // Pass a callback or handle promise to stop saving state
+      onSave(formData).finally(() => {
+        setIsSaving(false);
+        setModifiedFields(new Set());
+      });
+    } else {
       setIsSaving(false);
-      setModifiedFields(new Set());
-      if (onSave) {
-        onSave(formData);
-      }
-    }, 1500);
+    }
   };
 
   const handleReset = () => {

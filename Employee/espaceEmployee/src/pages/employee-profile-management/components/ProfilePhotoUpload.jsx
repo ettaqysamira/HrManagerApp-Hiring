@@ -4,7 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const ProfilePhotoUpload = ({ currentPhoto, currentPhotoAlt, onPhotoChange }) => {
-  const [previewUrl, setPreviewUrl] = useState(currentPhoto);
+  const [previewUrl, setPreviewUrl] = useState(currentPhoto || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400');
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileSelect = (event) => {
@@ -24,7 +24,7 @@ const ProfilePhotoUpload = ({ currentPhoto, currentPhotoAlt, onPhotoChange }) =>
       reader.onloadend = () => {
         setPreviewUrl(reader?.result);
         setIsUploading(true);
-        
+
         setTimeout(() => {
           setIsUploading(false);
           if (onPhotoChange) {
@@ -46,7 +46,7 @@ const ProfilePhotoUpload = ({ currentPhoto, currentPhotoAlt, onPhotoChange }) =>
   return (
     <div className="bg-card rounded-lg border border-border p-6">
       <h3 className="text-sm font-semibold text-foreground mb-4">Photo de Profil</h3>
-      
+
       <div className="flex flex-col items-center gap-4">
         <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-border">
           <Image

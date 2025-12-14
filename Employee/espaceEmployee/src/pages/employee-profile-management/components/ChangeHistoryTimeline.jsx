@@ -18,11 +18,11 @@ const ChangeHistoryTimeline = ({ changes }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'approved':
-        return 'CheckCircle2';
+        return 'CircleCheck';
       case 'pending':
         return 'Clock';
       case 'rejected':
-        return 'XCircle';
+        return 'CircleX';
       default:
         return 'Circle';
     }
@@ -123,19 +123,18 @@ const ChangeHistoryTimeline = ({ changes }) => {
                 <div className="absolute left-4 top-10 bottom-0 w-px bg-border" />
               )}
               <div className="flex gap-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  change?.status === 'approved' ? 'bg-success/10' :
-                  change?.status === 'pending' ? 'bg-warning/10' :
-                  change?.status === 'rejected'? 'bg-error/10' : 'bg-muted'
-                }`}>
-                  <Icon 
-                    name={getStatusIcon(change?.status)} 
-                    size={16} 
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${change?.status === 'approved' ? 'bg-success/10' :
+                    change?.status === 'pending' ? 'bg-warning/10' :
+                      change?.status === 'rejected' ? 'bg-error/10' : 'bg-muted'
+                  }`}>
+                  <Icon
+                    name={getStatusIcon(change?.status)}
+                    size={16}
                     color={
                       change?.status === 'approved' ? 'var(--color-success)' :
-                      change?.status === 'pending' ? 'var(--color-warning)' :
-                      change?.status === 'rejected' ? 'var(--color-error)' :
-                      'var(--color-muted-foreground)'
+                        change?.status === 'pending' ? 'var(--color-warning)' :
+                          change?.status === 'rejected' ? 'var(--color-error)' :
+                            'var(--color-muted-foreground)'
                     }
                   />
                 </div>

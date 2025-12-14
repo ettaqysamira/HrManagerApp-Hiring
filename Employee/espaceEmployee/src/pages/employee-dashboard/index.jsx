@@ -14,13 +14,53 @@ const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [currentUser, setCurrentUser] = useState({
+    name: "Employé",
+    role: "Collaborateur",
+    email: "",
+    lastLogin: new Date()
+  });
 
-  const currentUser = {
-    name: "Samira ETTAQY",
-    role: "Développeuse Senior",
-    email: "sophie.martin@employeespace.fr",
-    lastLogin: new Date(Date.now() - 86400000)
-  };
+  useEffect(() => {
+    // Check for auth data in URL (from Login app)
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get('token');
+    const userParam = params.get('user');
+
+    if (tokenParam && userParam) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userParam));
+        localStorage.setItem('authToken', tokenParam);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        setCurrentUser({
+          name: `${user.firstName} ${user.lastName}`,
+          role: "Employé", // Or from user data if available
+          email: user.login, // using login as email/identifier
+          lastLogin: new Date()
+        });
+      } catch (e) {
+        console.error("Error parsing auth data", e);
+      }
+    } else {
+      // Check localStorage
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setCurrentUser({
+            name: `${user.firstName} ${user.lastName}`,
+            role: "Employé",
+            email: user.login,
+            lastLogin: new Date()
+          });
+        } catch (e) { console.error(e); }
+      }
+    }
+  }, []);
 
   const kpiData = [
     {
@@ -293,9 +333,9 @@ const EmployeeDashboard = () => {
 
         <main className="main-content">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <WelcomeBanner 
-              userName={currentUser?.name} 
-              lastLogin={currentUser?.lastLogin} 
+            <WelcomeBanner
+              userName={currentUser?.name}
+              lastLogin={currentUser?.lastLogin}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -351,7 +391,7 @@ const EmployeeDashboard = () => {
                   </div>
                 </div>
 
-                
+
               </div>
             </div>
 

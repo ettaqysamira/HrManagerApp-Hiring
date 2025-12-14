@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SidebarProvider } from '../../components/navigation/SidebarNavigation';
 import SidebarNavigation from '../../components/navigation/SidebarNavigation';
 import MobileNavigationMenu from '../../components/navigation/MobileNavigationMenu';
@@ -17,19 +17,50 @@ import SyncStatusCard from './components/SyncStatusCard';
 const EmployeeProfileManagement = () => {
   const [activeSection, setActiveSection] = useState('personal');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  console.log("DEBUG: EmployeeProfileManagement Rendering. userData:", userData);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUserData(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse user data", e);
+      }
+    }
+  }, []);
+
+  console.log("Debug: userData from localStorage:", userData);
+
+  const calculateSeniority = (startDate) => {
+    if (!startDate) return "—";
+    const start = new Date(startDate);
+    const now = new Date();
+    const diffTime = Math.abs(now - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const years = Math.floor(diffDays / 365);
+    const months = Math.floor((diffDays % 365) / 30);
+
+    if (years > 0) return `${years} an${years > 1 ? 's' : ''} ${months > 0 ? `${months} mois` : ''}`;
+    if (months > 0) return `${months} mois`;
+    return `${diffDays} jours`;
+  };
 
   const currentUser = {
-    name: "Samira ETTAQY",
-    role: "Développeuse Senior",
-    email: "samira.ettaqy@company.ma",
-    photo: "https://img.rocket.new/generatedImages/rocket_gen_img_1c34455be-1763299427331.png",
-    photoAlt: "Portrait professionnel de Samira ETTAQY, cheveux longs bruns, blazer bleu marine et chemise blanche"
+    name: userData ? `${userData.firstName} ${userData.lastName}` : "Employé",
+    role: userData?.position || "Collaborateur",
+    email: userData?.email || "",
+    photo: userData?.photoUrl || null, // Ensure backend sends valid URL or base64
+    photoAlt: `Photo de ${userData?.firstName || 'profil'}`
   };
 
   const quickStats = [
-    { id: 1, label: "Ancienneté", value: "4 ans 2 mois", icon: "Calendar", iconColor: "var(--color-primary)", bgColor: "bg-primary/10" },
-    { id: 2, label: "Département", value: "Informatique", icon: "Building2", iconColor: "var(--color-accent)", bgColor: "bg-accent/10" },
-    { id: 3, label: "Profil Complété", value: "98%", icon: "CheckCircle2", iconColor: "var(--color-success)", bgColor: "bg-success/10" }
+    { id: 1, label: "Ancienneté", value: calculateSeniority(userData?.startDate), icon: "Calendar", iconColor: "var(--color-primary)", bgColor: "bg-primary/10" },
+    { id: 2, label: "Département", value: userData?.department || "—", icon: "Building2", iconColor: "var(--color-accent)", bgColor: "bg-accent/10" },
+    { id: 3, label: "Statut", value: userData?.status || "Actif", icon: "CircleCheck", iconColor: "var(--color-success)", bgColor: "bg-success/10" }
   ];
 
   const profileSections = [
@@ -40,25 +71,25 @@ const EmployeeProfileManagement = () => {
   ];
 
   const personalDetailsData = {
-    firstName: "Samira",
-    lastName: "ETTAQY",
-    dateOfBirth: "1981-03-12",
-    placeOfBirth: "Casablanca, Maroc",
-    gender: "female",
-    maritalStatus: "married",
-    nationality: "Marocaine",
-    socialSecurityNumber: "1 81 03 75 116 234 56"
+    firstName: userData?.firstName || "",
+    lastName: userData?.lastName || "",
+    dateOfBirth: userData?.birthDate || "", // Assuming backend sends this (might need update later if not)
+    placeOfBirth: "—", // Not currently in standard auth response
+    gender: "—",
+    maritalStatus: "—",
+    nationality: "—",
+    socialSecurityNumber: "—"
   };
 
   const contactInformationData = {
-    personalEmail: "samira.ettaqy@gmail.com",
-    workEmail: "samira.ettaqy@company.ma",
-    phoneNumber: "+212 6 12 34 56 78",
-    mobileNumber: "+212 6 98 76 54 32",
-    address: "Rue Ibn Sina, Quartier Gauthier",
-    city: "Casablanca",
-    postalCode: "20000",
-    country: "Maroc"
+    personalEmail: userData?.email || "",
+    workEmail: userData?.email || "",
+    phoneNumber: userData?.phone || "",
+    mobileNumber: userData?.phone || "",
+    address: userData?.address || "",
+    city: "—",
+    postalCode: "—",
+    country: "—"
   };
 
   const emergencyContactsData = [
@@ -88,10 +119,57 @@ const EmployeeProfileManagement = () => {
     { id: 4, name: "Annuaire d'Entreprise", icon: "BookOpen", status: "synced", lastSync: "2025-12-01T07:45:00" }
   ];
 
-  const handleSave = (data) => {
+  const handleSave = async (data) => {
     console.log('Saving data:', data);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+
+    try {
+      const url = `http://localhost:5076/api/Employees/${userData?.id}/profile`;
+      console.log('Sending PUT request to:', url);
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add Authorization header if you implemented JWT check in backend (highly recommended)
+          // 'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          // Map frontend fields to backend DTO
+          phone: data.phoneNumber || data.mobileNumber,
+          address: data.address,
+          email: data.personalEmail,
+          // Personal Details
+          birthDate: data.dateOfBirth,
+          placeOfBirth: data.placeOfBirth,
+          gender: data.gender,
+          maritalStatus: data.maritalStatus,
+          nationality: data.nationality,
+          socialSecurityNumber: data.socialSecurityNumber
+        })
+      });
+
+      if (response.ok) {
+        setShowSuccessMessage(true);
+
+        // Update local state
+        const updatedUser = { ...userData, ...data };
+        // Special mapping for field naming differences
+        if (data.phoneNumber) updatedUser.phone = data.phoneNumber;
+        if (data.personalEmail) updatedUser.email = data.personalEmail;
+        if (data.dateOfBirth) updatedUser.birthDate = data.dateOfBirth;
+
+        setUserData(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser)); // Persist update
+
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      } else {
+        console.error("Failed to save profile");
+        alert("Erreur lors de l'enregistrement via API.");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Erreur réseau.");
+    }
   };
 
   const handleCancel = () => console.log('Changes cancelled');

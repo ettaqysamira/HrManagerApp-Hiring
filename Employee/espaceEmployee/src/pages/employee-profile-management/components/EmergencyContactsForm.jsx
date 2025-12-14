@@ -91,18 +91,15 @@ const EmergencyContactsForm = ({ initialData, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      if (onSave) {
-        onSave(contacts);
-      }
-    }, 1500);
+    if (onSave) {
+      onSave(contacts);
+    }
+    setIsSaving(false);
   };
 
   const handleReset = () => {

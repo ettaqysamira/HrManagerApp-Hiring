@@ -45,7 +45,10 @@ const TopBar = ({ currentUser = null, notificationCount = 0 }) => {
 
   const handleLogout = () => {
     setShowUserMenu(false);
-    console.log('Déconnexion utilisateur');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+
+    window.location.href = "http://localhost:5173";
   };
 
   return (

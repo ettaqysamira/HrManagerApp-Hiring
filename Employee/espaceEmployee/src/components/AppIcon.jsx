@@ -1,6 +1,5 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
-import { HelpCircle } from 'lucide-react';
 
 function Icon({
     name,
@@ -13,7 +12,9 @@ function Icon({
     const IconComponent = LucideIcons?.[name];
 
     if (!IconComponent) {
-        return <HelpCircle size={size} color="gray" strokeWidth={strokeWidth} className={className} {...props} />;
+        const Fallback = LucideIcons?.CircleHelp || LucideIcons?.HelpCircle || LucideIcons?.AlertCircle;
+        if (!Fallback) return null;
+        return <Fallback size={size} color="gray" strokeWidth={strokeWidth} className={className} {...props} />;
     }
 
     return <IconComponent

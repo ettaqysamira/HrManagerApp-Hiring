@@ -205,7 +205,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
           
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Motif <span className="text-error">*</span>
+              Description <span className="text-error">*</span>
             </label>
             <textarea
               value={formData?.reason}

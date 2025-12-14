@@ -13,7 +13,7 @@ const BankingDetailsForm = ({ initialData, onSave, onCancel }) => {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setModifiedFields(prev => new Set([...prev, field]));
-    
+
     if (errors?.[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -58,19 +58,16 @@ const BankingDetailsForm = ({ initialData, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      setModifiedFields(new Set());
-      if (onSave) {
-        onSave(formData);
-      }
-    }, 1500);
+    if (onSave) {
+      onSave(formData);
+    }
+    setIsSaving(false);
+    setModifiedFields(new Set());
   };
 
   const handleReset = () => {

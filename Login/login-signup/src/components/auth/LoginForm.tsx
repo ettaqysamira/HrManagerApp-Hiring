@@ -6,11 +6,13 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 
+import { authService } from "../../services/auth.service";
+
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    login: "",
     password: "",
     rememberMe: false,
   });
@@ -18,23 +20,43 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
+    if (!formData.login || !formData.password) {
       toast.error("Veuillez remplir tous les champs");
       return;
     }
 
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await authService.login({
+        login: formData.login,
+        password: formData.password
+      });
 
-    toast.success("Connexion réussie !");
-    setIsLoading(false);
+      // Store locally (backup)
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      toast.success("Connexion réussie !");
+
+      // Redirect to Employee App with token
+      setTimeout(() => {
+        const userStr = encodeURIComponent(JSON.stringify(response.user));
+        const tokenStr = encodeURIComponent(response.token);
+        window.location.href = `http://localhost:5174/employee-dashboard?token=${tokenStr}&user=${userStr}`;
+      }, 1000);
+
+    } catch (error: any) {
+      toast.error(error.message || "Identifiant ou mot de passe incorrect");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="w-full max-w-md mx-auto animate-slide-up">
       <div className="text-center mb-8">
-        
+
         <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
           Se Connecter
         </h1>
@@ -45,18 +67,18 @@ const LoginForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium text-foreground">
-            Adresse email
+          <Label htmlFor="login" className="text-sm font-medium text-foreground">
+            Identifiant (Login)
           </Label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
-              id="email"
-              type="email"
-              placeholder="exemple@entreprise.com"
+              id="login"
+              type="text"
+              placeholder="votre.identifiant"
               className="pl-12"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={formData.login}
+              onChange={(e) => setFormData({ ...formData, login: e.target.value })}
             />
           </div>
         </div>
@@ -85,7 +107,7 @@ const LoginForm = () => {
           </div>
         </div>
 
-       
+
         <Button
           type="submit"
           variant="hr"

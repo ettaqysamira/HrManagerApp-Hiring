@@ -18,11 +18,11 @@ const SyncStatusCard = ({ syncStatus }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'synced':
-        return 'CheckCircle2';
+        return 'CircleCheck';
       case 'pending':
         return 'Clock';
       case 'error':
-        return 'AlertCircle';
+        return 'CircleAlert';
       default:
         return 'Circle';
     }
@@ -59,19 +59,18 @@ const SyncStatusCard = ({ syncStatus }) => {
         {syncStatus?.map((system) => (
           <div key={system?.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                system?.status === 'synced' ? 'bg-success/10' :
-                system?.status === 'pending' ? 'bg-warning/10' :
-                system?.status === 'error'? 'bg-error/10' : 'bg-muted'
-              }`}>
-                <Icon 
-                  name={system?.icon} 
-                  size={20} 
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${system?.status === 'synced' ? 'bg-success/10' :
+                  system?.status === 'pending' ? 'bg-warning/10' :
+                    system?.status === 'error' ? 'bg-error/10' : 'bg-muted'
+                }`}>
+                <Icon
+                  name={system?.icon}
+                  size={20}
                   color={
                     system?.status === 'synced' ? 'var(--color-success)' :
-                    system?.status === 'pending' ? 'var(--color-warning)' :
-                    system?.status === 'error' ? 'var(--color-error)' :
-                    'var(--color-muted-foreground)'
+                      system?.status === 'pending' ? 'var(--color-warning)' :
+                        system?.status === 'error' ? 'var(--color-error)' :
+                          'var(--color-muted-foreground)'
                   }
                 />
               </div>

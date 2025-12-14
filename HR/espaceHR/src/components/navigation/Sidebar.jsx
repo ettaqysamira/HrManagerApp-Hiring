@@ -96,7 +96,7 @@ const Sidebar = () => {
         />
       )}
       <aside
-        className={`sidebar2 ${isCollapsed ? 'collapsed' : ''} ${
+        className={`sidebar3 ${isCollapsed ? 'collapsed' : ''} ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >

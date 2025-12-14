@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HR.API.Controllers
 {
@@ -36,18 +37,17 @@ namespace HR.API.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             
-            // Generate claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString()),
                 new Claim(ClaimTypes.Name, $"{employee.FirstName} {employee.LastName}"),
-                new Claim(ClaimTypes.Role, "Employee") // Default role, can be enhanced later
+                new Claim(ClaimTypes.Role, "Employee") 
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(8), // 8 hour working day
+                Expires = DateTime.UtcNow.AddHours(8), 
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -78,6 +78,57 @@ namespace HR.API.Controllers
                     employee.SocialSecurityNumber
                 }
             });
+        }
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { message = "Token invalide ou claim manquant." });
+                }
+
+                if (!int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return BadRequest(new { message = "ID utilisateur invalide." });
+                }
+
+                var employee = await _context.Employees
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (employee == null)
+                {
+                    return NotFound(new { message = "Utilisateur non trouvé." });
+                }
+
+                return Ok(new
+                {
+                    employee.Id,
+                    employee.FirstName,
+                    employee.LastName,
+                    employee.Login,
+                    employee.Email,
+                    employee.PhotoUrl,
+                    employee.Position,
+                    employee.Department,
+                    employee.StartDate,
+                    employee.Status,
+                    employee.Phone,
+                    employee.Address,
+                    employee.BirthDate,
+                    employee.Gender,
+                    employee.MaritalStatus,
+                    employee.Nationality,
+                    employee.SocialSecurityNumber
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Une erreur est survenue lors de la récupération du profil.", error = ex.Message });
+            }
         }
     }
 }

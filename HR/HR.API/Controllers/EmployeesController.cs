@@ -17,14 +17,12 @@ namespace HR.API.Controllers
             _context = context;
         }
 
-        // GET: api/Employees
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
             return await _context.Employees.ToListAsync();
         }
 
-        // GET: api/Employees/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Employee>> GetEmployee(int id)
         {
@@ -38,7 +36,6 @@ namespace HR.API.Controllers
             return employee;
         }
 
-        // PUT: api/Employees/5/profile
         [HttpPut("{id}/profile")]
         public async Task<IActionResult> UpdateEmployeeProfile(int id, [FromBody] EmployeeProfileUpdateDto updateDto)
         {
@@ -48,12 +45,10 @@ namespace HR.API.Controllers
                 return NotFound();
             }
 
-            // Update allowed fields
             if (!string.IsNullOrEmpty(updateDto.Phone)) employee.Phone = updateDto.Phone;
             if (!string.IsNullOrEmpty(updateDto.Address)) employee.Address = updateDto.Address;
             if (!string.IsNullOrEmpty(updateDto.PhotoUrl)) employee.PhotoUrl = updateDto.PhotoUrl;
             
-            // Allow updating personal details if they were empty or need correction
             if (updateDto.BirthDate.HasValue) employee.BirthDate = updateDto.BirthDate.Value;
             if (!string.IsNullOrEmpty(updateDto.PlaceOfBirth)) employee.PlaceOfBirth = updateDto.PlaceOfBirth;
             if (!string.IsNullOrEmpty(updateDto.Gender)) employee.Gender = updateDto.Gender;
@@ -61,7 +56,6 @@ namespace HR.API.Controllers
             if (!string.IsNullOrEmpty(updateDto.Nationality)) employee.Nationality = updateDto.Nationality;
             if (!string.IsNullOrEmpty(updateDto.SocialSecurityNumber)) employee.SocialSecurityNumber = updateDto.SocialSecurityNumber;
 
-            // Email can be updated if provided (assuming personal email logic, or just updating main email)
             if (!string.IsNullOrEmpty(updateDto.Email)) employee.Email = updateDto.Email;
 
             employee.UpdatedAt = DateTime.UtcNow;

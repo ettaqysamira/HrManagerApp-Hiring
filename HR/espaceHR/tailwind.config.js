@@ -15,14 +15,14 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: 'var(--color-border)', 
-        input: 'var(--color-input)', 
-        ring: 'var(--color-ring)', 
-        background: 'var(--color-background)', 
-        foreground: 'var(--color-foreground)', 
+        border: 'var(--color-border)', // slate-200
+        input: 'var(--color-input)', // slate-200
+        ring: 'var(--color-ring)', // blue-600
+        background: 'var(--color-background)', // slate-50
+        foreground: 'var(--color-foreground)', // slate-900
         primary: {
-          DEFAULT: 'var(--color-primary)', 
-          foreground: 'var(--color-primary-foreground)', 
+          DEFAULT: 'var(--color-primary)', // blue-600
+          foreground: 'var(--color-primary-foreground)', // white
         },
         secondary2:{
           DEFAULT: 'var(--color-secondary2)',
@@ -33,44 +33,44 @@ module.exports = {
 
         },
         secondary: {
-          DEFAULT: 'var(--color-secondary)', 
-          foreground: 'var(--color-secondary-foreground)', 
+          DEFAULT: 'var(--color-secondary)', // slate-500
+          foreground: 'var(--color-secondary-foreground)', // white
         },
         destructive: {
-          DEFAULT: 'var(--color-destructive)', 
-          foreground: 'var(--color-destructive-foreground)', 
+          DEFAULT: 'var(--color-destructive)', // red-600
+          foreground: 'var(--color-destructive-foreground)', // white
         },
         muted: {
-          DEFAULT: 'var(--color-muted)', 
-          foreground: 'var(--color-muted-foreground)', 
+          DEFAULT: 'var(--color-muted)', // slate-100
+          foreground: 'var(--color-muted-foreground)', // slate-600
         },
         accent: {
-          DEFAULT: 'var(--color-accent)', 
-          foreground: 'var(--color-accent-foreground)', 
+          DEFAULT: 'var(--color-accent)', // sky-500
+          foreground: 'var(--color-accent-foreground)', // white
         },
         popover: {
-          DEFAULT: 'var(--color-popover)', 
-          foreground: 'var(--color-popover-foreground)', 
+          DEFAULT: 'var(--color-popover)', // white
+          foreground: 'var(--color-popover-foreground)', // slate-900
         },
         card: {
-          DEFAULT: 'var(--color-card)', 
-          foreground: 'var(--color-card-foreground)', 
+          DEFAULT: 'var(--color-card)', // white
+          foreground: 'var(--color-card-foreground)', // slate-900
         },
         card2:{
           DEFAULT:'var(--color-card2)'
 
         },
         success: {
-          DEFAULT: 'var(--color-success)', 
-          foreground: 'var(--color-success-foreground)', 
+          DEFAULT: 'var(--color-success)', // emerald-600
+          foreground: 'var(--color-success-foreground)', // white
         },
         warning: {
-          DEFAULT: 'var(--color-warning)', 
-          foreground: 'var(--color-warning-foreground)', 
+          DEFAULT: 'var(--color-warning)', // amber-600
+          foreground: 'var(--color-warning-foreground)', // white
         },
         error: {
-          DEFAULT: 'var(--color-error)', 
-          foreground: 'var(--color-error-foreground)', 
+          DEFAULT: 'var(--color-error)', // red-600
+          foreground: 'var(--color-error-foreground)', // white
         },
       },
       borderRadius: {

@@ -10,14 +10,33 @@ import HRDashboardOverview from './pages/hr-dashboard-overview';
 import CandidateManagement from './pages/candidate-management';
 import AbsenceAnalyticsDashboard from './pages/absence-analytics-dashboard';
 import CandidateProfile from "./pages/candidate-management/components/CandidateProfile";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as Sonner } from "./components/ui/sonner";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import QRCodeAttendanceSystem from './pages/qr-code-attendance-system';
+import NotificationsCenter from './pages/notifications-center';
+import SystemSettingsAndPreferences from './pages/system-settings-and-preferences';
+import LeaveManagementSystem1 from './pages/leave-management-system1';
+import EmployeeDashboard from './pages/employee-dashboard';
+import EmployeeProfileManagement from './pages/employee-profile-management';
+
+
+const queryClient = new QueryClient();
 
 const Routes = () => {
   return (
+     <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
     <BrowserRouter>
       <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
-=        <Route path="/" element={<HRDashboardOverview />} />
+=       <Route path="/hr-overview" element={<HRDashboardOverview />} />
         <Route path="/leave-management-system" element={<LeaveManagementSystem />} />
         <Route path="/employee-management" element={<EmployeeManagement />} />
         <Route path="/contract-administration" element={<ContractAdministration />} />
@@ -25,10 +44,22 @@ const Routes = () => {
         <Route path="/candidate-management" element={<CandidateManagement />} />
           <Route path="/candidate-management/candidate/:id" element={<CandidateProfile />} />
         <Route path="/absence-analytics-dashboard" element={<AbsenceAnalyticsDashboard />} />
+        <Route path="/employee" element={<EmployeeDashboard />} />
+        <Route path="/qr-code-attendance-system" element={<QRCodeAttendanceSystem />} />
+        <Route path="/notifications-center" element={<NotificationsCenter />} />
+        <Route path="/system-settings-and-preferences" element={<SystemSettingsAndPreferences />} />
+        <Route path="/leave-management-system1" element={<LeaveManagementSystem1 />} />
+        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+        <Route path="/employee-profile-management" element={<EmployeeProfileManagement />} />
+        
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
     </BrowserRouter>
+    </TooltipProvider>
+      </QueryClientProvider>
   );
 };
 

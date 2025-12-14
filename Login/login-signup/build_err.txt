@@ -1,0 +1,23 @@
+
+> login-signup@0.0.0 build
+> vite build
+
+[36mvite v7.2.7 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 3 modules transformed.
+[31m✗[39m Build failed in 296ms
+[31merror during build:
+[31m[vite:css] [postcss] Cannot find module 'tailwindcss-animate'
+Require stack:
+- C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\tailwind.config.js[31m
+file: [36mC:/Users/ASUS/Desktop/HrManagerApp+Hiring/Login/login-signup/src/index.css:undefined:NaN[31m
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at require.resolve (node:internal/modules/helpers:163:19)
+    at _resolve (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\jiti\dist\jiti.js:1:246378)
+    at jiti (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\jiti\dist\jiti.js:1:249092)
+    at C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\tailwind.config.js:96:13
+    at evalModule (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\jiti\dist\jiti.js:1:251913)
+    at jiti (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\jiti\dist\jiti.js:1:249841)
+    at C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\tailwindcss\lib\lib\load-config.js:53:30
+    at loadConfig (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\tailwindcss\lib\lib\load-config.js:55:6)
+    at getTailwindConfig (C:\Users\ASUS\Desktop\HrManagerApp+Hiring\Login\login-signup\node_modules\tailwindcss\lib\lib\setupTrackingContext.js:74:116)[39m

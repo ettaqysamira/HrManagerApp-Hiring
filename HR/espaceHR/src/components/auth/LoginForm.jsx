@@ -39,7 +39,11 @@ const LoginForm = () => {
 
       setTimeout(() => {
         const tokenStr = encodeURIComponent(response.token);
-        window.location.href = `http://localhost:5173/employee-dashboard?token=${tokenStr}`;
+        if (response.user.role === "HR") {
+          window.location.href = `http://localhost:5173/hr-overview?token=${tokenStr}`;
+        } else {
+          window.location.href = `http://localhost:5173/employee?token=${tokenStr}`;
+        }
       }, 1000);
 
     } catch (error) {
@@ -114,7 +118,7 @@ const LoginForm = () => {
           <Checkbox
             id="rememberMe"
             checked={formData.rememberMe}
-            onCheckedChange={(checked) => 
+            onCheckedChange={(checked) =>
               setFormData({ ...formData, rememberMe: checked })
             }
           />

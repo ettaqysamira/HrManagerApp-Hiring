@@ -11,7 +11,7 @@ import LeaveRequestCard from './components/LeaveRequestCard';
 import LeaveRequestModal from './components/LeaveRequestModal';
 import FilterPanel from './components/FilterPanel';
 
-const LeaveManagementSystem1 = () => {
+const LeaveManagementSystemEmployee = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [filters, setFilters] = useState({});
@@ -411,4 +411,4 @@ const LeaveManagementSystem1 = () => {
 
 };
 
-export default LeaveManagementSystem1;
+export default LeaveManagementSystemEmployee;

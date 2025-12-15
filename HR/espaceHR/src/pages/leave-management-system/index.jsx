@@ -15,7 +15,7 @@ import FilterPanel from './components/FilterPanel';
 import BulkApprovalToolbar from './components/BulkApprovalToolbar';
 import TeamAvailabilityHeatmap from './components/TeamAvailabilityHeatmap';
 
-const LeaveManagementSystem = () => {
+const LeaveManagementSystemHR = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [selectedRequests, setSelectedRequests] = useState([]);
@@ -401,4 +401,4 @@ const LeaveManagementSystem = () => {
 
 };
 
-export default LeaveManagementSystem;
+export default LeaveManagementSystemHR;

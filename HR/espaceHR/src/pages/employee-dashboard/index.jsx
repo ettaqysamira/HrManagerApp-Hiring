@@ -25,7 +25,6 @@ const EmployeeDashboard = () => {
     const params = new URLSearchParams(window.location.search);
     const tokenParam = params.get('token');
 
-    // Function to fetch user data
     const fetchUserData = async (token) => {
       try {
         const response = await fetch('http://localhost:5076/api/Auth/me', {
@@ -36,6 +35,9 @@ const EmployeeDashboard = () => {
 
         if (response.ok) {
           const userData = await response.json();
+
+          userData.role = userData.role || userData.Role || "Employee";
+
           localStorage.setItem('user', JSON.stringify(userData));
 
           setCurrentUser({
@@ -52,10 +54,8 @@ const EmployeeDashboard = () => {
 
     if (tokenParam) {
       localStorage.setItem('authToken', tokenParam);
-      // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
 
-      // Fetch user data since it's no longer in URL
       fetchUserData(tokenParam);
     } else {
       const storedUser = localStorage.getItem('user');
@@ -72,7 +72,6 @@ const EmployeeDashboard = () => {
           });
         } catch (e) { console.error(e); }
       } else if (storedToken) {
-        // If we have token but no user data, fetch it
         fetchUserData(storedToken);
       }
     }

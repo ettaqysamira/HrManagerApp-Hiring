@@ -1,198 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { SidebarProvider } from '../../components/navigation/SidebarNavigation';
-import SidebarNavigation from '../../components/navigation/SidebarNavigation';
+import { useState, useEffect } from 'react';
+import { employeeApi } from '../../services/api';
+import { authService } from '../../services/auth.service';
+import SidebarNavigation, { SidebarProvider } from '../../components/navigation/SidebarNavigation';
 import MobileNavigationMenu from '../../components/navigation/MobileNavigationMenu';
 import TopBar from '../../components/navigation/TopBar';
-import Icon from '../../components/AppIcon';
-import Button from '../../components/ui/Button';
 import LeaveBalanceCard from './components/LeaveBalanceCard';
+import FilterPanel from './components/FilterPanel';
 import LeaveCalendar from './components/LeaveCalendar';
 import LeaveRequestCard from './components/LeaveRequestCard';
 import LeaveRequestModal from './components/LeaveRequestModal';
-import FilterPanel from './components/FilterPanel';
+import Button from '../../components/ui/Button';
+import Icon from '../../components/AppIcon';
 
 const LeaveManagementSystemEmployee = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [leaveRequests, setLeaveRequests] = useState([]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('list');
+  const [selectedRequests, setSelectedRequests] = useState([]);
   const [filters, setFilters] = useState({});
   const [savedPresets, setSavedPresets] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRequests, setSelectedRequests] = useState([]);
-  const [viewMode, setViewMode] = useState('list');
+  const [leaveBalances, setLeaveBalances] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const currentUser = {
-    name: 'Samira Ettaqy',
-    role: 'Employée',
-    email: 'samira.ettaqy@company.ma',
-    avatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1b73b4346-1763297697315.png",
-    avatarAlt: 'Photo professionnelle de Samira Ettaqy avec cheveux bruns courts et chemise blanche'
-  };
+  const notificationCount = 0; 
 
-  const leaveBalances = [
-    { id: 1, type: 'Congés Payés', balance: 18, total: 25, accrualRate: '2.08 jours/mois', color: 'bg-primary', icon: 'Calendar' },
-    { id: 2, type: 'Congés Maladie', balance: 8, total: 10, accrualRate: '0.83 jours/mois', color: 'bg-error', icon: 'Heart' },
-    { id: 3, type: 'Congés Sans Solde', balance: 5, total: 5, accrualRate: 'Sur demande', color: 'bg-warning', icon: 'AlertCircle' },
-    { id: 4, type: 'Congés Formation', balance: 3, total: 5, accrualRate: '0.42 jours/mois', color: 'bg-accent', icon: 'GraduationCap' }
-  ];
-
-
-  const [leaveRequests, setLeaveRequests] = useState([
-    {
-      id: 1,
-      employeeName: 'Samira Ettaqy',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1b73b4346-1763297697315.png",
-      employeeAvatarAlt: 'Photo professionnelle de Samira Ettaqy avec cheveux bruns courts et chemise blanche',
-      department: 'Développement',
-      leaveType: 'Congés Payés',
-      startDate: '2025-12-15',
-      endDate: '2025-12-22',
-      duration: 8,
-      status: 'Approuvé',
-      reason: 'Vacances de fin d\'année avec la famille',
-      submittedDate: '2025-11-15T10:30:00',
-      approvalProgress: 100,
-      approvers: [{ name: 'Manager', initials: 'AB', approved: true }, { name: 'RH', initials: 'ML', approved: true }]
-    },
-    {
-      id: 2,
-      employeeName: 'Mohamed Tazi',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1ea3461a7-1763301220913.png",
-      employeeAvatarAlt: 'Photo professionnelle de Mohamed Tazi avec cheveux noirs courts et costume gris',
-      department: 'Marketing',
-      leaveType: 'Congés Maladie',
-      startDate: '2025-12-05',
-      endDate: '2025-12-06',
-      duration: 2,
-      status: 'En attente',
-      reason: 'Consultation médicale spécialisée',
-      submittedDate: '2025-11-28T14:20:00',
-      approvalProgress: 50,
-      approvers: [{ name: 'Manager', initials: 'AB', approved: true }, { name: 'RH', initials: 'ML', approved: false }]
-    },
-    {
-      id: 3,
-      employeeName: 'Fatima Zahra Idrissi',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_11dfc6731-1763299430366.png",
-      employeeAvatarAlt: 'Photo professionnelle de Fatima Zahra Idrissi avec cheveux roux et lunettes',
-      department: 'RH',
-      leaveType: 'Congés Payés',
-      startDate: '2025-12-10',
-      endDate: '2025-12-12',
-      duration: 3,
-      status: 'Approuvé',
-      reason: 'Week-end prolongé pour événement familial',
-      submittedDate: '2025-11-20T09:15:00',
-      approvalProgress: 100,
-      approvers: [{ name: 'Manager', initials: 'AS', approved: true }, { name: 'RH', initials: 'ML', approved: true }]
-    },
-    {
-      id: 4,
-      employeeName: 'Youssef Bensaid',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1309f1322-1763296767839.png",
-      employeeAvatarAlt: 'Photo professionnelle de Youssef Bensaid avec barbe courte et pull bleu',
-      department: 'Finance',
-      leaveType: 'Congés Formation',
-      startDate: '2025-12-08',
-      endDate: '2025-12-09',
-      duration: 2,
-      status: 'En attente',
-      reason: 'Formation professionnelle en finance',
-      submittedDate: '2025-11-25T11:45:00',
-      approvalProgress: 33,
-      approvers: [{ name: 'Manager', initials: 'PL', approved: true }, { name: 'RH', initials: 'ML', approved: false }, { name: 'Directeur', initials: 'RC', approved: false }]
-    },
-    {
-      id: 5,
-      employeeName: 'Khadija El Fassi',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_138e492ac-1763297226301.png",
-      employeeAvatarAlt: 'Photo professionnelle de Khadija El Fassi avec cheveux noirs et écharpe rouge',
-      department: 'IT',
-      leaveType: 'Congés Payés',
-      startDate: '2025-11-20',
-      endDate: '2025-11-22',
-      duration: 3,
-      status: 'Rejeté',
-      reason: 'Demande tardive pour période de forte activité',
-      submittedDate: '2025-11-18T16:30:00',
-      approvalProgress: 0,
-      approvers: [{ name: 'Manager', initials: 'ND', approved: false }]
-    },
-    {
-      id: 6,
-      employeeName: 'Rachid El Amrani',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_112193a91-1763294779964.png",
-      employeeAvatarAlt: 'Photo professionnelle de Rachid El Amrani avec cheveux gris et costume noir',
-      department: 'Ventes',
-      leaveType: 'Congés Payés',
-      startDate: '2025-12-18',
-      endDate: '2025-12-20',
-      duration: 3,
-      status: 'Approuvé',
-      reason: 'Repos et récupération',
-      submittedDate: '2025-11-10T08:00:00',
-      approvalProgress: 100,
-      approvers: [{ name: 'Manager', initials: 'SB', approved: true }, { name: 'Directeur', initials: 'RC', approved: true }]
-    },
-    {
-      id: 7,
-      employeeName: 'Salma Lahlou',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1c0b928c0-1763296854463.png",
-      employeeAvatarAlt: 'Photo professionnelle de Salma Lahlou avec cheveux bruns et chemise blanche',
-      department: 'Développement',
-      leaveType: 'Congés Sans Solde',
-      startDate: '2026-01-15',
-      endDate: '2026-01-17',
-      duration: 3,
-      status: 'En attente',
-      reason: 'Projet personnel nécessitant absence temporaire',
-      submittedDate: '2025-11-29T10:00:00',
-      approvalProgress: 0,
-      approvers: [{ name: 'Manager', initials: 'JD', approved: false }, { name: 'RH', initials: 'ML', approved: false }]
-    },
-    {
-      id: 8,
-      employeeName: 'Amine Choukrallah',
-      employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_112193a91-1763294779964.png",
-      employeeAvatarAlt: 'Photo professionnelle de Amine Choukrallah avec cheveux noirs et costume gris',
-      department: 'Marketing',
-      leaveType: 'Congés Payés',
-      startDate: '2025-12-23',
-      endDate: '2025-12-30',
-      duration: 8,
-      status: 'Approuvé',
-      reason: 'Vacances de Noël avec la famille élargie',
-      submittedDate: '2025-11-05T13:20:00',
-      approvalProgress: 100,
-      approvers: [{ name: 'Manager', initials: 'CB', approved: true }, { name: 'RH', initials: 'ML', approved: true }]
-    }
-  ]);
-  const notificationCount = 3;
+  const currentUser = authService.getCurrentUser() || { name: 'Employé', role: 'Employee' };
 
   useEffect(() => {
     document.title = 'Gestion des Congés - EmployeeSpace';
+    fetchRequests();
+
+    setLeaveBalances([
+      { id: 1, type: 'Congés Payés', balance: 13, total: 25, accrualRate: '+2.08/mois', color: 'bg-blue-500', icon: 'Calendar' },
+      { id: 2, type: 'Maladie', balance: 8, total: 10, accrualRate: 'Variable', color: 'bg-red-500', icon: 'Activity' },
+      { id: 3, type: 'Sans Solde', balance: 100, total: 100, accrualRate: '-', color: 'bg-gray-500', icon: 'Clock' },
+      { id: 4, type: 'Récupération', balance: 4, total: 5, accrualRate: 'Sur demande', color: 'bg-green-500', icon: 'Timer' }
+    ]);
   }, []);
+
+  const fetchRequests = async () => {
+    try {
+      const response = await employeeApi.getConges();
+      
+      if (response.data) {
+        const mappedRequests = response.data.map(req => ({
+          id: req.id,
+          leaveType: req.leaveType,
+          startDate: req.startDate.split('T')[0],
+          endDate: req.endDate.split('T')[0],
+          status: req.status, 
+          reason: req.reason,
+          duration: req.duration,
+          submittedDate: req.createdAt,
+          employeeName: currentUser.name, 
+          approvalProgress: req.status === 'Approuvé' ? 100 : (req.status === 'Refusé' ? 0 : 50),
+        }));
+        setLeaveRequests(mappedRequests);
+      }
+    } catch (err) {
+      console.error("Failed to fetch leaves", err);
+    }
+  };
 
   const handleNewRequest = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmitRequest = (requestData) => {
-    const newRequest = {
-      id: leaveRequests?.length + 1,
-      employeeName: currentUser?.name,
-      employeeAvatar: currentUser?.avatar,
-      employeeAvatarAlt: currentUser?.avatarAlt,
-      department: 'Développement',
-      ...requestData,
-      approvalProgress: 0,
-      approvers: [
-      { name: 'Manager', initials: 'JD', approved: false },
-      { name: 'RH', initials: 'ML', approved: false }]
-
-    };
-
-    setLeaveRequests([newRequest, ...leaveRequests]);
-    setIsModalOpen(false);
+  const handleSubmitRequest = async (requestData) => {
+    try {
+      const payload = {
+        leaveType: requestData.leaveType,
+        startDate: requestData.startDate,
+        endDate: requestData.endDate,
+        reason: requestData.reason,
+        halfDay: requestData.halfDay || false,
+        duration: requestData.duration
+      };
+      await employeeApi.createConge(payload);
+      fetchRequests(); 
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Failed to apply for leave", err);
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message || "Erreur lors de la demande.";
+      alert(`Erreur: ${errorMessage}`);
+    }
   };
 
   const handleViewDetails = (request) => {
@@ -227,8 +120,8 @@ const LeaveManagementSystemEmployee = () => {
     if (searchQuery) {
       const query = searchQuery?.toLowerCase();
       if (!request?.employeeName?.toLowerCase()?.includes(query) &&
-      !request?.leaveType?.toLowerCase()?.includes(query) &&
-      !request?.status?.toLowerCase()?.includes(query)) {
+        !request?.leaveType?.toLowerCase()?.includes(query) &&
+        !request?.status?.toLowerCase()?.includes(query)) {
         return false;
       }
     }
@@ -241,7 +134,7 @@ const LeaveManagementSystemEmployee = () => {
         <SidebarNavigation notificationCount={notificationCount} />
         <MobileNavigationMenu notificationCount={notificationCount} />
         <TopBar currentUser={currentUser} notificationCount={notificationCount} />
-        
+
         <main className="main-content">
           <div className="p-6 lg:p-8 space-y-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -272,7 +165,7 @@ const LeaveManagementSystemEmployee = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {leaveBalances?.map((balance) =>
-              <LeaveBalanceCard key={balance?.id} {...balance} />
+                <LeaveBalanceCard key={balance?.id} {...balance} />
               )}
             </div>
 
@@ -310,8 +203,7 @@ const LeaveManagementSystemEmployee = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                        viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`
+                        className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`
                         }
                         aria-label="Vue liste">
 
@@ -319,8 +211,7 @@ const LeaveManagementSystemEmployee = () => {
                       </button>
                       <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                        viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`
+                        className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`
                         }
                         aria-label="Vue grille">
 
@@ -330,24 +221,24 @@ const LeaveManagementSystemEmployee = () => {
                   </div>
 
                   {selectedRequests?.length > 0 &&
-                  <div className="mb-4 p-3 bg-accent/10 border border-accent/20 rounded-lg flex items-center justify-between">
+                    <div className="mb-4 p-3 bg-accent/10 border border-accent/20 rounded-lg flex items-center justify-between">
                       <span className="text-sm font-medium text-accent">
                         {selectedRequests?.length} demande{selectedRequests?.length > 1 ? 's' : ''} sélectionnée{selectedRequests?.length > 1 ? 's' : ''}
                       </span>
                       <div className="flex items-center gap-2">
                         <Button
-                        variant="outline"
-                        size="sm"
-                        iconName="Check"
-                        onClick={() => handleBulkAction('approve')}>
+                          variant="outline"
+                          size="sm"
+                          iconName="Check"
+                          onClick={() => handleBulkAction('approve')}>
 
                           Approuver
                         </Button>
                         <Button
-                        variant="outline"
-                        size="sm"
-                        iconName="X"
-                        onClick={() => handleBulkAction('reject')}>
+                          variant="outline"
+                          size="sm"
+                          iconName="X"
+                          onClick={() => handleBulkAction('reject')}>
 
                           Rejeter
                         </Button>
@@ -367,26 +258,26 @@ const LeaveManagementSystemEmployee = () => {
 
                 <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
                   {filteredRequests?.length > 0 ?
-                  filteredRequests?.map((request) =>
-                  <LeaveRequestCard
-                    key={request?.id}
-                    request={request}
-                    onViewDetails={handleViewDetails}
-                    onApprove={handleApprove}
-                    onReject={handleReject} />
+                    filteredRequests?.map((request) =>
+                      <LeaveRequestCard
+                        key={request?.id}
+                        request={request}
+                        onViewDetails={handleViewDetails}
+                        onApprove={handleApprove}
+                        onReject={handleReject} />
 
-                  ) :
+                    ) :
 
-                  <div className="bg-card rounded-lg border border-border p-12 text-center">
+                    <div className="bg-card rounded-lg border border-border p-12 text-center">
                       <Icon name="Calendar" size={48} color="var(--color-muted-foreground)" className="mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-foreground mb-2">Aucune demande trouvée</h3>
                       <p className="text-sm text-muted-foreground mb-6">
                         Aucune demande ne correspond à vos critères de recherche
                       </p>
                       <Button
-                      variant="default"
-                      iconName="Plus"
-                      onClick={handleNewRequest}>
+                        variant="default"
+                        iconName="Plus"
+                        onClick={handleNewRequest}>
 
                         Créer une Demande
                       </Button>
@@ -396,7 +287,7 @@ const LeaveManagementSystemEmployee = () => {
               </div>
             </div>
 
-            
+
           </div>
         </main>
 

@@ -22,6 +22,7 @@ import SystemSettingsAndPreferences from './pages/system-settings-and-preference
 import LeaveManagementSystemEmployee from './pages/leave-management-system1';
 import EmployeeDashboard from './pages/employee-dashboard';
 import EmployeeProfileManagement from './pages/employee-profile-management';
+import DocumentManagement from './pages/document-management';
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -44,20 +45,23 @@ const Routes = () => {
                 <Route path="/candidate-management" element={<CandidateManagement />} />
                 <Route path="/candidate-management/candidate/:id" element={<CandidateProfile />} />
                 <Route path="/absence-analytics-dashboard" element={<AbsenceAnalyticsDashboard />} />
-                <Route path="/qr-code-attendance-system" element={<QRCodeAttendanceSystem />} />
-                <Route path="/system-settings-and-preferences" element={<SystemSettingsAndPreferences />} />
                 <Route path="/leave-management-system" element={<LeaveManagementSystemHR />} />
                 <Route path="/employee-management" element={<EmployeeManagement />} />
               </Route>
 
-              <Route element={<ProtectedRoute allowedRoles={['Employee']} />}>
-                <Route path="/employee" element={<EmployeeDashboard />} />
-                <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
-                <Route path="/employee-profile-management" element={<EmployeeProfileManagement />} />
-                <Route path="/leave-management-system1" element={<LeaveManagementSystemEmployee />} />
+              {/* Shared Routes (HR & Employee) */}
+              <Route element={<ProtectedRoute allowedRoles={['HR', 'Employee', 'Employé']} />}>
+                <Route path="/qr-code-attendance-system" element={<QRCodeAttendanceSystem />} />
+                <Route path="/system-settings-and-preferences" element={<SystemSettingsAndPreferences />} />
+                <Route path="/notifications-center" element={<NotificationsCenter />} />
               </Route>
 
-              <Route path="/notifications-center" element={<NotificationsCenter />} />
+              <Route element={<ProtectedRoute allowedRoles={['Employee', 'Employé']} />}>
+                <Route path="/employee" element={<EmployeeDashboard />} />
+                <Route path="/employee-profile-management" element={<EmployeeProfileManagement />} />
+                <Route path="/leave-management-system1" element={<LeaveManagementSystemEmployee />} />
+                <Route path="/document-management" element={<DocumentManagement />} />
+              </Route>
 
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />

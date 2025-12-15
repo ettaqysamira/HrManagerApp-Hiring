@@ -3,6 +3,7 @@ using HR.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HR.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215211513_AddNotificationsTable")]
+    partial class AddNotificationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +68,7 @@ namespace HR.API.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Conges", (string)null);
+                    b.ToTable("Conges");
                 });
 
             modelBuilder.Entity("HR.API.Models.Employee", b =>
@@ -159,7 +161,7 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("HR.API.Models.HrUser", b =>
@@ -198,7 +200,7 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("HRs", (string)null);
+                    b.ToTable("HRs");
                 });
 
             modelBuilder.Entity("HR.API.Models.Notification", b =>
@@ -228,7 +230,7 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("HR.API.Models.Conge", b =>

@@ -12,19 +12,19 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
     reason: '',
     halfDay: false
   });
-  
+
   const [errors, setErrors] = useState({});
   const [conflicts, setConflicts] = useState([]);
-  
+
   if (!isOpen) return null;
-  
+
   const leaveTypeOptions = [
     { value: 'conges_payes', label: 'Congés Payés' },
     { value: 'conges_maladie', label: 'Congés Maladie' },
     { value: 'conges_sans_solde', label: 'Congés Sans Solde' },
     { value: 'conges_formation', label: 'Congés Formation' }
   ];
-  
+
   const calculateDuration = () => {
     if (!formData?.startDate || !formData?.endDate) return 0;
     const start = new Date(formData.startDate);
@@ -33,22 +33,22 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return formData?.halfDay ? diffDays * 0.5 : diffDays;
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData?.leaveType) {
       newErrors.leaveType = 'Type de congé requis';
     }
-    
+
     if (!formData?.startDate) {
       newErrors.startDate = 'Date de début requise';
     }
-    
+
     if (!formData?.endDate) {
       newErrors.endDate = 'Date de fin requise';
     }
-    
+
     if (formData?.startDate && formData?.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
@@ -56,24 +56,26 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
         newErrors.endDate = 'La date de fin doit être après la date de début';
       }
     }
-    
+
     if (!formData?.reason || formData?.reason?.trim()?.length < 10) {
       newErrors.reason = 'Le motif doit contenir au moins 10 caractères';
     }
-    
+
     const duration = calculateDuration();
     const selectedLeaveType = leaveBalances?.find(lb => lb?.type?.toLowerCase()?.includes(formData?.leaveType?.split('_')?.[1]));
+    /*
     if (selectedLeaveType && duration > selectedLeaveType?.balance) {
       newErrors.balance = `Solde insuffisant. Disponible: ${selectedLeaveType?.balance} jours`;
     }
-    
+    */
+
     setErrors(newErrors);
     return Object.keys(newErrors)?.length === 0;
   };
-  
+
   const handleSubmit = (e) => {
     e?.preventDefault();
-    
+
     if (validateForm()) {
       const duration = calculateDuration();
       onSubmit({
@@ -82,7 +84,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
         submittedDate: new Date()?.toISOString(),
         status: 'En attente'
       });
-      
+
       setFormData({
         leaveType: '',
         startDate: '',
@@ -94,16 +96,16 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
       setConflicts([]);
     }
   };
-  
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors?.[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
-  
+
   const duration = calculateDuration();
-  
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
       <div className="bg-card rounded-lg border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in">
@@ -122,7 +124,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
             <Icon name="X" size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <Select
             label="Type de Congé"
@@ -133,7 +135,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
             onChange={(value) => handleChange('leaveType', value)}
             error={errors?.leaveType}
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Date de Début"
@@ -144,7 +146,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               error={errors?.startDate}
               min={new Date()?.toISOString()?.split('T')?.[0]}
             />
-            
+
             <Input
               label="Date de Fin"
               type="date"
@@ -155,7 +157,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               min={formData?.startDate || new Date()?.toISOString()?.split('T')?.[0]}
             />
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -168,7 +170,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               Demi-journée
             </label>
           </div>
-          
+
           {duration > 0 && (
             <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
               <div className="flex items-center gap-2 text-accent">
@@ -179,7 +181,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               </div>
             </div>
           )}
-          
+
           {errors?.balance && (
             <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
               <div className="flex items-center gap-2 text-error">
@@ -188,7 +190,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               </div>
             </div>
           )}
-          
+
           {conflicts?.length > 0 && (
             <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
               <div className="flex items-start gap-2 text-warning mb-2">
@@ -202,7 +204,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               </ul>
             </div>
           )}
-          
+
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Description <span className="text-error">*</span>
@@ -222,7 +224,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
               {formData?.reason?.length} / 500 caractères
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3 pt-4 border-t border-border">
             <Button
               type="button"

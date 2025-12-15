@@ -28,6 +28,14 @@ export const authService = {
 
             const data = await response.json();
 
+            if (data.user) {
+                const normalizedUser = {
+                    ...data.user,
+                    role: data.user.role || data.user.Role || "Employee"
+                };
+                data.user = normalizedUser;
+            }
+
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 

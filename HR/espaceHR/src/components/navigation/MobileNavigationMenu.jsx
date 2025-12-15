@@ -11,7 +11,7 @@ const MobileNavigationMenu = ({ notificationCount = 0 }) => {
     {
       id: 'dashboard',
       label: 'Tableau de Bord',
-      path: '/employee-dashboard',
+      path: '/employee',
       icon: 'LayoutDashboard',
       priority: 1
     },

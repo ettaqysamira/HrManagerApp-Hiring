@@ -9,13 +9,10 @@ namespace HR.API.Data
     {
         public static async Task SeedAsync(AppDbContext context)
         {
-            // Ensure DB is created
             await context.Database.MigrateAsync();
 
-            // Check if HR user exists
             var hrEmail = "samira@ettaqy.com";
             
-            // 1. Separate HR Table Seeding
             var hrUser = await context.HRs.FirstOrDefaultAsync(h => h.Email == hrEmail);
 
             if (hrUser == null)
@@ -35,7 +32,6 @@ namespace HR.API.Data
                 await context.SaveChangesAsync();
             }
 
-            // Optional: Clean up if Samira exists in Employees table (to avoid confusion)
             var oldEmployeeEntry = await context.Employees.FirstOrDefaultAsync(e => e.Email == hrEmail);
             if (oldEmployeeEntry != null)
             {

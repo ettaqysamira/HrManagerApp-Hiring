@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { 
+import {
   User, Mail, Phone, Building2, Briefcase, Calendar,
   UserCircle, Upload, X, Save, Lock, Eye, EyeOff
 } from "lucide-react";
@@ -75,7 +75,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
       Status: frontendData.status,
       BirthDate: frontendData.birthDate ? new Date(frontendData.birthDate).toISOString() : null,
       Address: frontendData.address || null,
-      Salary: frontendData.salary || "0",
+      Salary: parseFloat(frontendData.salary || "0"),
       PhotoUrl: frontendData.photoUrl || null,
       EmployeeId: `EMP${Date.now()}`,
       CreatedAt: new Date().toISOString(),
@@ -85,7 +85,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
 
   const handleFormSubmit = async (data) => {
     setIsSubmitting(true);
-    
+
     try {
       const isValid = await trigger();
       if (!isValid) {
@@ -113,7 +113,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
       console.log("Données envoyées à l'API:", employeeData);
 
       const response = await employeeApi.createEmployee(employeeData);
-      
+
       toast({
         title: "Succès",
         description: `Employé ${data.firstName} ${data.lastName} ajouté avec succès.`,
@@ -132,9 +132,9 @@ export function EmployeeForm({ onClose, onSubmit }) {
 
     } catch (error) {
       console.error("Erreur détaillée lors de l'ajout:", error);
-      
+
       let errorMessage = "Une erreur est survenue lors de l'enregistrement";
-      
+
       if (error.response) {
         if (error.response.data && typeof error.response.data === 'object') {
           if (error.response.data.message) {
@@ -157,9 +157,9 @@ export function EmployeeForm({ onClose, onSubmit }) {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast({
-        title: "Erreur",
+        title: `Erreur ${error.response?.status || ''}`,
         description: errorMessage,
         variant: "destructive",
       });
@@ -179,7 +179,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
         });
         return;
       }
-      
+
       if (!file.type.startsWith('image/')) {
         toast({
           title: "Format invalide",
@@ -188,7 +188,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
         });
         return;
       }
-      
+
       setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -198,7 +198,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const convertFileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -232,8 +232,8 @@ export function EmployeeForm({ onClose, onSubmit }) {
             </p>
           </div>
           {onClose && (
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="p-2 rounded-lg hover:bg-muted transition-colors"
               type="button"
               disabled={isSubmitting}
@@ -246,7 +246,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
 
       <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
         <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
-          
+
           <div className="flex justify-center mb-8">
             <div className="relative">
               <div className={cn(
@@ -254,9 +254,9 @@ export function EmployeeForm({ onClose, onSubmit }) {
                 photoPreview ? "border-primary" : "hover:border-primary/50 transition-colors"
               )}>
                 {photoPreview ? (
-                  <img 
-                    src={photoPreview} 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={photoPreview}
+                    className="w-full h-full object-cover"
                     alt="Aperçu photo"
                   />
                 ) : (
@@ -265,10 +265,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
               </div>
               <label className="absolute bottom-0 right-0 p-2 bg-accent text-accent-foreground rounded-full cursor-pointer hover:bg-accent/90 transition-colors shadow-md">
                 <Upload className="h-4 w-4" />
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
                   onChange={handlePhotoChange}
                   disabled={isSubmitting}
                 />
@@ -288,10 +288,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="firstName" className="text-sm font-medium">
                     Prénom *
                   </Label>
-                  <Input 
+                  <Input
                     id="firstName"
-                    placeholder="Prénom" 
-                    {...register("firstName", { 
+                    placeholder="Prénom"
+                    {...register("firstName", {
                       required: "Le prénom est requis",
                       minLength: {
                         value: 2,
@@ -314,10 +314,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="lastName" className="text-sm font-medium">
                     Nom *
                   </Label>
-                  <Input 
+                  <Input
                     id="lastName"
-                    placeholder="Nom" 
-                    {...register("lastName", { 
+                    placeholder="Nom"
+                    {...register("lastName", {
                       required: "Le nom est requis",
                       minLength: {
                         value: 2,
@@ -340,11 +340,11 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="email" className="text-sm font-medium">
                     Email *
                   </Label>
-                  <Input 
+                  <Input
                     id="email"
-                    type="email" 
-                    placeholder="exemple@company.com" 
-                    {...register("email", { 
+                    type="email"
+                    placeholder="exemple@company.com"
+                    {...register("email", {
                       required: "L'email est requis",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -363,11 +363,11 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="phone" className="text-sm font-medium">
                     Téléphone *
                   </Label>
-                  <Input 
+                  <Input
                     id="phone"
-                    type="tel" 
-                    placeholder="+212 6XX-XXXXXX" 
-                    {...register("phone", { 
+                    type="tel"
+                    placeholder="+212 6XX-XXXXXX"
+                    {...register("phone", {
                       required: "Le téléphone est requis",
                       pattern: {
                         value: /^[\+]?[0-9\s\-\(\)]+$/,
@@ -390,9 +390,9 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="birthDate" className="text-sm font-medium">
                     Date de Naissance
                   </Label>
-                  <Input 
+                  <Input
                     id="birthDate"
-                    type="date" 
+                    type="date"
                     {...register("birthDate", {
                       validate: (value) => {
                         if (!value) return true;
@@ -417,9 +417,9 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="address" className="text-sm font-medium">
                     Adresse
                   </Label>
-                  <Input 
+                  <Input
                     id="address"
-                    placeholder="Adresse complète" 
+                    placeholder="Adresse complète"
                     {...register("address", {
                       maxLength: {
                         value: 200,
@@ -438,10 +438,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="login" className="text-sm font-medium">
                     Identifiant (Login) *
                   </Label>
-                  <Input 
+                  <Input
                     id="login"
-                    placeholder="Nom d'utilisateur" 
-                    {...register("login", { 
+                    placeholder="Nom d'utilisateur"
+                    {...register("login", {
                       required: "L'identifiant est requis",
                       minLength: {
                         value: 3,
@@ -469,7 +469,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      {...register("password", { 
+                      {...register("password", {
                         required: "Le mot de passe est requis",
                         minLength: {
                           value: 6,
@@ -510,7 +510,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label className="text-sm font-medium">
                     Département *
                   </Label>
-                  <Select 
+                  <Select
                     onValueChange={(v) => setValue("department", v, { shouldValidate: true })}
                     disabled={isSubmitting}
                   >
@@ -536,10 +536,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="position" className="text-sm font-medium">
                     Poste *
                   </Label>
-                  <Input 
+                  <Input
                     id="position"
-                    placeholder="Ex: Développeur Frontend" 
-                    {...register("position", { 
+                    placeholder="Ex: Développeur Frontend"
+                    {...register("position", {
                       required: "Le poste est requis",
                       minLength: {
                         value: 2,
@@ -562,7 +562,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label className="text-sm font-medium">
                     Type de Contrat *
                   </Label>
-                  <Select 
+                  <Select
                     onValueChange={(v) => setValue("contractType", v, { shouldValidate: true })}
                     disabled={isSubmitting}
                   >
@@ -588,7 +588,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label className="text-sm font-medium">
                     Manager *
                   </Label>
-                  <Select 
+                  <Select
                     onValueChange={(v) => setValue("manager", v, { shouldValidate: true })}
                     disabled={isSubmitting}
                   >
@@ -613,10 +613,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="salary" className="text-sm font-medium">
                     Salaire Annuel (€)
                   </Label>
-                  <Input 
+                  <Input
                     id="salary"
-                    type="number" 
-                    placeholder="0.00" 
+                    type="number"
+                    placeholder="0.00"
                     step="0.01"
                     {...register("salary", {
                       min: {
@@ -640,10 +640,10 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label htmlFor="startDate" className="text-sm font-medium">
                     Date de Début *
                   </Label>
-                  <Input 
+                  <Input
                     id="startDate"
-                    type="date" 
-                    {...register("startDate", { 
+                    type="date"
+                    {...register("startDate", {
                       required: "La date de début est requise",
                       validate: (value) => {
                         const date = new Date(value);
@@ -667,7 +667,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   <Label className="text-sm font-medium">
                     Statut *
                   </Label>
-                  <Select 
+                  <Select
                     defaultValue="Actif"
                     onValueChange={(v) => setValue("status", v, { shouldValidate: true })}
                     disabled={isSubmitting}
@@ -725,12 +725,11 @@ export function EmployeeForm({ onClose, onSubmit }) {
                 <div className="space-y-1">
                   <p className="text-muted-foreground">Statut</p>
                   <div className="inline-flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${
-                      formValues.status === "Actif" ? "bg-success" :
+                    <div className={`h-2 w-2 rounded-full ${formValues.status === "Actif" ? "bg-success" :
                       formValues.status === "En Congé" ? "bg-warning" :
-                      formValues.status === "Période d'Essai" ? "bg-accent" :
-                      "bg-muted"
-                    }`} />
+                        formValues.status === "Période d'Essai" ? "bg-accent" :
+                          "bg-muted"
+                      }`} />
                     <span className="font-medium text-foreground">
                       {formValues.status || "—"}
                     </span>
@@ -748,17 +747,17 @@ export function EmployeeForm({ onClose, onSubmit }) {
 
           <div className="sticky bottom-0 bg-card border-t border-border -mx-6 -mb-6 px-6 py-4 mt-8">
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                type="button" 
+              <Button
+                variant="outline"
+                type="button"
                 onClick={onClose}
                 className="min-w-[100px]"
                 disabled={isSubmitting}
               >
                 Annuler
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="accent"
                 className="min-w-[120px]"
                 disabled={isSubmitting}
@@ -770,7 +769,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" /> 
+                    <Save className="h-4 w-4 mr-2" />
                     Enregistrer
                   </>
                 )}

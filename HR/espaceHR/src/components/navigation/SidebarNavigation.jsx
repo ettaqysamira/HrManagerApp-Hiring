@@ -31,7 +31,7 @@ const SidebarNavigation = ({ notificationCount = 0 }) => {
     {
       id: 'dashboard',
       label: 'Tableau de Bord',
-      path: '/employee-dashboard',
+      path: '/employee',
       icon: 'LayoutDashboard',
       tooltip: 'Vue d\'ensemble de vos activités RH'
     },

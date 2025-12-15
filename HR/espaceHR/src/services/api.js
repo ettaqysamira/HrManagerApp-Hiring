@@ -8,12 +8,36 @@ const api = axios.create({
     },
 });
 
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const employeeApi = {
-    getAllEmployees: () => api.get('/employees'),
-    createEmployee: (data) => api.post('/employees', data),
-    getEmployee: (id) => api.get(`/employees/${id}`),
-    updateEmployee: (id, data) => api.put(`/employees/${id}`, data),
-    deleteEmployee: (id) => api.delete(`/employees/${id}`),
+    getEmployees: () => api.get('/Employees'),
+    getEmployee: (id) => api.get(`/Employees/${id}`),
+    createEmployee: (data) => api.post('/Employees', data),
+    updateEmployee: (id, data) => api.put(`/Employees/${id}`, data),
+    deleteEmployee: (id) => api.delete(`/Employees/${id}`),
+
+    // Conges
+    getConges: () => api.get('/Conges'),
+    createConge: (data) => api.post('/Conges', data),
+    updateCongeStatus: (id, status) => api.put(`/Conges/${id}/status`, { status }),
+};
+
+export const notificationApi = {
+    getNotifications: () => api.get('/Notifications'),
+    markAsRead: (id) => api.put(`/Notifications/${id}/read`),
+    markAllAsRead: () => api.post('/Notifications/mark-all-read'),
 };
 
 export default api;

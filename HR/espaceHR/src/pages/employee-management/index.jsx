@@ -37,7 +37,7 @@ const EmployeeManagement = () => {
   const fetchEmployees = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await employeeApi.getAllEmployees();
+      const response = await employeeApi.getEmployees();
       const mappedEmployees = response.data.map(emp => ({
         id: emp.id,
         employeeId: emp.employeeId,
@@ -53,7 +53,7 @@ const EmployeeManagement = () => {
         birthDate: emp.birthDate,
         address: emp.address,
         salary: emp.salary,
-        avatar: emp.photoUrl || "https://github.com/shadcn.png" 
+        avatar: emp.photoUrl || "https://github.com/shadcn.png"
       }));
       setEmployees(mappedEmployees);
     } catch (error) {
@@ -129,7 +129,7 @@ const EmployeeManagement = () => {
     console.log('Saving employee:', updatedEmployee);
     setShowQuickEdit(false);
     setEditingEmployee(null);
-    fetchEmployees(); 
+    fetchEmployees();
   }, [fetchEmployees]);
 
   const handleBulkAction = useCallback((action) => {
@@ -162,14 +162,14 @@ const EmployeeManagement = () => {
 
         <main className={`main-content ${isFilterCollapsed ? '' : 'sidebar-collapsed'}`}>
           <Breadcrumb />
-        {/*
+          {/*
         <FilterSidebar
             isCollapsed={isFilterCollapsed}
             onToggle={() => setIsFilterCollapsed(!isFilterCollapsed)}
             filters={filters}
             onFilterChange={handleFilterChange} />
         */}
-          
+
 
 
           <div className={`transition-all duration-200 ${isFilterCollapsed ? 'ml-0' : 'ml-80'} ${selectedEmployee ? 'mr-96' : 'mr-0'}`}>

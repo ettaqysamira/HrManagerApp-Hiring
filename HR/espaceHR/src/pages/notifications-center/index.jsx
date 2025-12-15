@@ -10,6 +10,7 @@ import NotificationListItem from './components/NotificationListItem';
 import NotificationDetailPanel from './components/NotificationDetailPanel';
 import NotificationFilterBar from './components/NotificationFilterBar';
 import BulkActionsBar from './components/BulkActionsBar';
+import { notificationApi } from '../../services/api';
 
 const NotificationsCenter = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -81,9 +82,35 @@ const NotificationsCenter = () => {
   ];
 
   useEffect(() => {
-    setNotifications(mockNotifications);
-    setFilteredNotifications(mockNotifications);
-    setSelectedNotification(mockNotifications?.[0]);
+    const fetchNotifications = async () => {
+      try {
+        const response = await notificationApi.getNotifications();
+        const mappedNotifications = response.data.map(n => ({
+          id: n.id,
+          category: n.title.includes('Congé') ? 'leave_updates' : 'system',
+          sender: 'Service RH',
+          subject: n.title,
+          preview: n.message.substring(0, 50) + '...',
+          content: n.message,
+          timestamp: new Date(n.createdAt),
+          priority: 'medium',
+          isRead: n.isRead,
+          hasAttachment: false,
+          requiresAction: false
+        }));
+        setNotifications(mappedNotifications);
+        setFilteredNotifications(mappedNotifications);
+        if (mappedNotifications.length > 0) {
+          setSelectedNotification(mappedNotifications[0]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch notifications", err);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -110,12 +137,17 @@ const NotificationsCenter = () => {
     setSelectedNotification(notification);
   };
 
-  const handleMarkAsRead = () => {
+  const handleMarkAsRead = async () => {
     if (selectedNotification) {
-      setNotifications(prev =>
-        prev.map(n => n.id === selectedNotification.id ? { ...n, isRead: !n.isRead } : n)
-      );
-      setSelectedNotification(prev => ({ ...prev, isRead: !prev.isRead }));
+      try {
+        await notificationApi.markAsRead(selectedNotification.id);
+        setNotifications(prev =>
+          prev.map(n => n.id === selectedNotification.id ? { ...n, isRead: true } : n)
+        );
+        setSelectedNotification(prev => ({ ...prev, isRead: true }));
+      } catch (err) {
+        console.error("Failed to mark as read", err);
+      }
     }
   };
 
@@ -129,7 +161,24 @@ const NotificationsCenter = () => {
     else setSelectedNotifications(filteredNotifications.map(n => n.id));
   };
 
-  const handleMarkAllRead = () => console.log('Marquer toutes comme lues:', selectedNotifications);
+  const handleMarkAllRead = async () => {
+    try {
+      if (selectedNotifications.length === 0) {
+        await notificationApi.markAllAsRead();
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      } else {
+        for (const id of selectedNotifications) {
+          await notificationApi.markAsRead(id);
+        }
+        setNotifications(prev =>
+          prev.map(n => selectedNotifications.includes(n.id) ? { ...n, isRead: true } : n)
+        );
+      }
+      setSelectedNotifications([]);
+    } catch (err) {
+      console.error("Failed to mark all/selected as read", err);
+    }
+  };
   const handleArchiveSelected = () => console.log('Archiver sélectionnées:', selectedNotifications);
   const handleDeleteSelected = () => console.log('Supprimer sélectionnées:', selectedNotifications);
   const handleClearSelection = () => setSelectedNotifications([]);

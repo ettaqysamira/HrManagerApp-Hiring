@@ -9,11 +9,14 @@ const ProtectedRoute = ({ allowedRoles }) => {
         return <Navigate to="/auth" replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-        if (user.role === "HR") {
-            return <Navigate to="/hr-overview" replace />;
-        } else {
-            return <Navigate to="/employee-dashboard" replace />;
+    if (allowedRoles) {
+        const userRole = user.role || user.Role;
+        if (!userRole || !allowedRoles.some(role => role.toLowerCase() === userRole.toLowerCase())) {
+            if (userRole === "HR") {
+                return <Navigate to="/hr-overview" replace />;
+            } else {
+                return <Navigate to="/employee" replace />;
+            }
         }
     }
 

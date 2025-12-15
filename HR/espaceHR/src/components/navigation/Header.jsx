@@ -3,14 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import { useSidebar } from './Sidebar';
 
+import { notificationApi } from '../../services/api';
+
 const Header = () => {
   const { isCollapsed, toggleMobile } = useSidebar();
-  const [notificationCount] = useState(8);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close menu when clicking outside
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await notificationApi.getNotifications();
+        const unreadCount = response.data.filter(n => !n.isRead).length;
+        setNotificationCount(unreadCount);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -36,7 +54,6 @@ const Header = () => {
 
   const handleProfileClick = () => {
     setShowUserMenu(false);
-    // Navigate to profile if exists, or stay/show toast
     console.log("Navigate to HR Profile");
   };
 
@@ -56,7 +73,10 @@ const Header = () => {
         </div>
 
         <div className="header-actions">
-          <div className="header-notification">
+          <div
+            className="header-notification cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/notifications-center')}
+          >
             <Icon name="Bell" size={20} color="var(--color-secondary2)" />
             {notificationCount > 0 && (
               <span className="header-notification-badge">

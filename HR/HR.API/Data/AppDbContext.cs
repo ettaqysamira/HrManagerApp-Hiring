@@ -11,5 +11,7 @@ namespace HR.API.Data
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<HrUser> HRs { get; set; }
+        public DbSet<Conge> Conges { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

@@ -178,7 +178,6 @@ const EmployeeProfileManagement = () => {
 
   const getSectionTitle = () => profileSections.find(s => s.id === activeSection)?.label || '';
 
-  // Construct employeeData object compatible with QRCodeDisplay
   const employeeQRData = {
     name: currentUser.name,
     employeeId: userData?.employeeId || "PENDING",

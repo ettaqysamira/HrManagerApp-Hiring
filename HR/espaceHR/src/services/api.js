@@ -39,4 +39,12 @@ export const notificationApi = {
     markAllAsRead: () => api.post('/Notifications/mark-all-read'),
 };
 
+export const contractApi = {
+    getContracts: () => api.get('/Contracts'),
+    getMyContracts: () => api.get('/Contracts/my-contracts'),
+    createContract: (data) => api.post('/Contracts', data),
+    updateContract: (id, data) => api.put(`/Contracts/${id}`, data),
+    deleteContract: (id) => api.delete(`/Contracts/${id}`),
+};
+
 export default api;

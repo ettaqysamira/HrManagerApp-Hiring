@@ -86,7 +86,6 @@ const HRAttendanceDashboard = () => {
                     <Breadcrumb />
 
                     <div className="p-6 max-w-7xl mx-auto space-y-8">
-                        {/* Header Section */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
@@ -108,7 +107,6 @@ const HRAttendanceDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <StatCard
                                 title="Total Employés"
@@ -202,7 +200,6 @@ const HRAttendanceDashboard = () => {
                                                         </span>
                                                     </td>
 
-                                                    {/* Morning */}
                                                     <td className="px-6 py-4">
                                                         {row.morning ? (
                                                             <div className="flex flex-col items-start gap-1">
@@ -222,7 +219,6 @@ const HRAttendanceDashboard = () => {
                                                         )}
                                                     </td>
 
-                                                    {/* Evening */}
                                                     <td className="px-6 py-4">
                                                         {row.evening ? (
                                                             <div className="flex flex-col items-start gap-1">
@@ -242,7 +238,6 @@ const HRAttendanceDashboard = () => {
                                                         )}
                                                     </td>
 
-                                                    {/* Global Status */}
                                                     <td className="px-6 py-4 text-center">
                                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${row.status === 'Présent'
                                                                 ? 'bg-green-100 text-green-700 ring-1 ring-green-600/20'

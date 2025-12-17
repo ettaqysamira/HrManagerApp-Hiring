@@ -13,7 +13,7 @@ namespace HR.API.Models
         public int EmployeeId { get; set; }
 
         [ForeignKey("EmployeeId")]
-        public Employee Employee { get; set; }
+        public Employee? Employee { get; set; }
 
         [Required]
         public string Type { get; set; } 

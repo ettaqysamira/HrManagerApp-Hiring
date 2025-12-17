@@ -51,7 +51,6 @@ const Routes = () => {
                 <Route path="/hr-attendance-dashboard" element={<HRAttendanceDashboard />} />
               </Route>
 
-              {/* Shared Routes (HR & Employee) */}
               <Route element={<ProtectedRoute allowedRoles={['HR', 'Employee', 'Employé']} />}>
                 <Route path="/qr-code-attendance-system" element={<QRCodeAttendanceSystem />} />
                 <Route path="/system-settings-and-preferences" element={<SystemSettingsAndPreferences />} />

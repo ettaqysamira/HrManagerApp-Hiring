@@ -13,13 +13,12 @@ import EmergencyContactsForm from './components/EmergencyContactsForm';
 import BankingDetailsForm from './components/BankingDetailsForm';
 import ChangeHistoryTimeline from './components/ChangeHistoryTimeline';
 import SyncStatusCard from './components/SyncStatusCard';
+import QRCodeDisplay from '../qr-code-attendance-system/components/QRCodeDisplay';
 
 const EmployeeProfileManagement = () => {
   const [activeSection, setActiveSection] = useState('personal');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [userData, setUserData] = useState(null);
-
-  console.log("DEBUG: EmployeeProfileManagement Rendering. userData:", userData);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -31,8 +30,6 @@ const EmployeeProfileManagement = () => {
       }
     }
   }, []);
-
-  console.log("Debug: userData from localStorage:", userData);
 
   const calculateSeniority = (startDate) => {
     if (!startDate) return "—";
@@ -53,7 +50,7 @@ const EmployeeProfileManagement = () => {
     name: userData ? `${userData.firstName} ${userData.lastName}` : "Employé",
     role: userData?.position || "Collaborateur",
     email: userData?.email || "",
-    photo: userData?.photoUrl || null, 
+    photo: userData?.photoUrl || null,
     photoAlt: `Photo de ${userData?.firstName || 'profil'}`
   };
 
@@ -73,8 +70,8 @@ const EmployeeProfileManagement = () => {
   const personalDetailsData = {
     firstName: userData?.firstName || "",
     lastName: userData?.lastName || "",
-    dateOfBirth: userData?.birthDate || "", 
-    placeOfBirth: "—", 
+    dateOfBirth: userData?.birthDate || "",
+    placeOfBirth: "—",
     gender: "—",
     maritalStatus: "—",
     nationality: "—",
@@ -120,17 +117,12 @@ const EmployeeProfileManagement = () => {
   ];
 
   const handleSave = async (data) => {
-    console.log('Saving data:', data);
-
     try {
       const url = `http://localhost:5076/api/Employees/${userData?.id}/profile`;
-      console.log('Sending PUT request to:', url);
-
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-         
         },
         body: JSON.stringify({
           phone: data.phoneNumber || data.mobileNumber,
@@ -147,14 +139,13 @@ const EmployeeProfileManagement = () => {
 
       if (response.ok) {
         setShowSuccessMessage(true);
-
         const updatedUser = { ...userData, ...data };
         if (data.phoneNumber) updatedUser.phone = data.phoneNumber;
         if (data.personalEmail) updatedUser.email = data.personalEmail;
         if (data.dateOfBirth) updatedUser.birthDate = data.dateOfBirth;
 
         setUserData(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser)); 
+        localStorage.setItem('user', JSON.stringify(updatedUser));
 
         setTimeout(() => setShowSuccessMessage(false), 3000);
       } else {
@@ -186,6 +177,14 @@ const EmployeeProfileManagement = () => {
   };
 
   const getSectionTitle = () => profileSections.find(s => s.id === activeSection)?.label || '';
+
+  // Construct employeeData object compatible with QRCodeDisplay
+  const employeeQRData = {
+    name: currentUser.name,
+    employeeId: userData?.employeeId || "PENDING",
+    department: userData?.department || "—",
+    position: userData?.position || "—"
+  };
 
   return (
     <SidebarProvider>
@@ -239,6 +238,9 @@ const EmployeeProfileManagement = () => {
               </div>
 
               <div className="lg:col-span-3">
+                <div className="mb-6">
+                  <QRCodeDisplay employeeData={employeeQRData} onRegenerate={() => console.log("Regenerate requested")} />
+                </div>
                 <ChangeHistoryTimeline changes={changeHistory} />
                 <SyncStatusCard syncStatus={syncStatus} />
               </div>

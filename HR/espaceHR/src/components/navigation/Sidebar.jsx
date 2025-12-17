@@ -60,6 +60,12 @@ const Sidebar = () => {
       badge: 3,
     },
     {
+      label: 'Gestion Présence',
+      path: '/hr-attendance-dashboard',
+      icon: 'Clock', 
+      badge: null,
+    },
+    {
       label: 'Gestion Congés',
       path: '/leave-management-system',
       icon: 'Calendar',
@@ -96,9 +102,8 @@ const Sidebar = () => {
         />
       )}
       <aside
-        className={`sidebar3 ${isCollapsed ? 'collapsed' : ''} ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        className={`sidebar3 ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0`}
       >
         <div className="sidebar-header">
           <div className="sidebar-logo">
@@ -111,9 +116,8 @@ const Sidebar = () => {
           {navigationItems?.map((item) => (
             <div
               key={item?.path}
-              className={`sidebar-nav-item ${
-                isActive(item?.path) ? 'active' : ''
-              }`}
+              className={`sidebar-nav-item ${isActive(item?.path) ? 'active' : ''
+                }`}
               onClick={() => handleNavigation(item?.path)}
               role="button"
               tabIndex={0}

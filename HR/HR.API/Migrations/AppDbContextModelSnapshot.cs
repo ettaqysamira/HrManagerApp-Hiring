@@ -21,6 +21,44 @@ namespace HR.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("HR.API.Models.Attendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsLate")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Shift")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeSpan>("Time")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Attendances");
+                });
+
             modelBuilder.Entity("HR.API.Models.Conge", b =>
                 {
                     b.Property<int>("Id")
@@ -66,7 +104,7 @@ namespace HR.API.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Conges", (string)null);
+                    b.ToTable("Conges");
                 });
 
             modelBuilder.Entity("HR.API.Models.Employee", b =>
@@ -159,7 +197,7 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("HR.API.Models.HrUser", b =>
@@ -198,7 +236,7 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("HRs", (string)null);
+                    b.ToTable("HRs");
                 });
 
             modelBuilder.Entity("HR.API.Models.Notification", b =>
@@ -228,7 +266,18 @@ namespace HR.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("HR.API.Models.Attendance", b =>
+                {
+                    b.HasOne("HR.API.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("HR.API.Models.Conge", b =>

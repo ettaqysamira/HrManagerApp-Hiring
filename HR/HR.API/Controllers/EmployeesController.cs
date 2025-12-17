@@ -11,10 +11,12 @@ namespace HR.API.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly HR.API.Services.IEmailService _emailService;
 
-        public EmployeesController(AppDbContext context)
+        public EmployeesController(AppDbContext context, HR.API.Services.IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -88,12 +90,59 @@ namespace HR.API.Controllers
                 employee.Password = HashPassword(employee.Password);
             }
 
+            if (string.IsNullOrEmpty(employee.EmployeeId))
+            {
+                employee.EmployeeId = $"EMP-{DateTime.UtcNow.Year}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            }
+
             employee.CreatedAt = DateTime.UtcNow;
 
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
+            try 
+            {
+                Console.WriteLine($"[DEBUG] Generating QR for EmployeeID: {employee.EmployeeId}");
+                Console.WriteLine($"[DEBUG] Employee Login: {employee.Login} (Is Null/Empty: {string.IsNullOrEmpty(employee.Login)})");
+
+                byte[] qrCodeBytes = GenerateQrCode(employee.EmployeeId);
+                Console.WriteLine($"[DEBUG] QR Code Generated. Size: {qrCodeBytes?.Length ?? 0} bytes");
+
+                string subject = "Bienvenue chez HR Manager - Votre Badge Collaborateur";
+                string body = $@"
+                    <h2>Bienvenue {employee.FirstName} {employee.LastName},</h2>
+                    <p>Votre compte employé a été créé avec succès.</p>
+                    <p>Voici vos identifiants :</p>
+                    <ul>
+                        <li><strong>Identifiant :</strong> {employee.Login ?? "Non défini"}</li>
+                        <li><strong>Email :</strong> {employee.Email}</li>
+                    </ul>
+                    <p>Veuillez trouver en pièce jointe votre Badge QR Code unique pour le pointage.</p>
+                    <p>Cordialement,<br>L'équipe RH</p>
+                ";
+
+                Console.WriteLine($"[DEBUG] Sending email to {employee.Email}...");
+                await _emailService.SendEmailWithAttachmentAsync(employee.Email, subject, body, qrCodeBytes, "Badge_QR.png");
+                Console.WriteLine("[DEBUG] Email sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error sending welcome email: {ex.ToString()}");
+            }
+
             return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
+        }
+
+        private byte[] GenerateQrCode(string text)
+        {
+            using (var qrGenerator = new QRCoder.QRCodeGenerator())
+            {
+                var qrCodeData = qrGenerator.CreateQrCode(text, QRCoder.QRCodeGenerator.ECCLevel.Q);
+                using (var qrCode = new QRCoder.PngByteQRCode(qrCodeData))
+                {
+                    return qrCode.GetGraphic(20);
+                }
+            }
         }
 
         [HttpPut("{id}")]

@@ -9,24 +9,42 @@ import AttendanceHistory from './components/AttendanceHistory';
 import AttendanceStats from './components/AttendanceStats';
 import IntegrationStatus from './components/IntegrationStatus';
 import QuickActions from './components/QuickActions';
+import AttendanceScanner from '../AttendanceScanner';
+import AttendanceService from '../../services/attendance.service';
+import { authService as AuthService } from '../../services/auth.service';
 
 const QRCodeAttendanceSystem = () => {
-  const [currentUser] = useState({
-    name: 'Samira ETTAQY',
-    role: 'Développeuse Senior',
-    employeeId: 'EMP-MAR-2024-1547'
-  });
+  const [mode, setMode] = useState('display');
+
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setCurrentUser({
+        name: `${user.firstName} ${user.lastName}`,
+        role: user.role,
+        employeeId: user.id
+      });
+    }
+  }, []);
 
   const [notificationCount] = useState(3);
 
-  const [employeeData] = useState({
-    name: 'Samira ETTAQY',
-    employeeId: 'EMP-MAR-2024-1547',
-    department: 'Développement',
-    position: 'Développeuse Senior',
-    qrCode: 'QR-EMP-MAR-2024-1547-A7B9C3D1',
-    lastRegenerated: '2025-11-29T08:30:00'
-  });
+  const [employeeData, setEmployeeData] = useState(null);
+
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setEmployeeData({
+        name: `${user.firstName} ${user.lastName}`,
+        employeeId: user.id || user.employeeId,
+        department: user.department || 'Non assigné',
+        position: user.role || 'Employé',
+        qrCode: user.id || user.employeeId 
+      });
+    }
+  }, []);
 
   const [attendanceStatus] = useState({
     status: 'checked-in',
@@ -34,39 +52,11 @@ const QRCodeAttendanceSystem = () => {
     lastCheckOut: null
   });
 
-  const [attendanceHistory] = useState([
+  const [attendanceHistory, setAttendanceHistory] = useState([
     {
       id: 1,
       timestamp: '2025-11-29T08:45:00',
       action: 'check-in',
-      location: 'Siège Casablanca',
-      verified: true
-    },
-    {
-      id: 2,
-      timestamp: '2025-11-28T08:42:00',
-      action: 'check-in',
-      location: 'Siège Casablanca',
-      verified: true
-    },
-    {
-      id: 3,
-      timestamp: '2025-11-28T12:30:00',
-      action: 'break-start',
-      location: 'Siège Casablanca',
-      verified: true
-    },
-    {
-      id: 4,
-      timestamp: '2025-11-28T13:15:00',
-      action: 'break-end',
-      location: 'Siège Casablanca',
-      verified: true
-    },
-    {
-      id: 5,
-      timestamp: '2025-11-28T18:05:00',
-      action: 'check-out',
       location: 'Siège Casablanca',
       verified: true
     }
@@ -131,6 +121,33 @@ const QRCodeAttendanceSystem = () => {
   };
 
   useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const user = AuthService.getCurrentUser();
+        const employeeId = user?.id || user?.employeeId;
+        if (employeeId) {
+          const response = await AttendanceService.getAttendances(null, employeeId);
+          if (response.data && Array.isArray(response.data)) {
+            const mappedHistory = response.data.map(a => ({
+              id: a.id,
+              timestamp: `${a.date.split('T')[0]}T${a.time}`, 
+              action: 'check-in',
+              location: 'Bureau',
+              verified: a.status === 'Accepted',
+              shift: a.shift,
+              status: a.status
+            }));
+            setAttendanceHistory(mappedHistory);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load attendance history", err);
+      }
+    };
+    fetchHistory();
+  }, []); 
+
+  useEffect(() => {
     const handleKeyPress = (e) => {
       if (e?.key === 'r' || e?.key === 'R') {
         handleRegenerateQR();
@@ -159,10 +176,25 @@ const QRCodeAttendanceSystem = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <QRCodeDisplay
-                  employeeData={employeeData}
-                  onRegenerate={handleRegenerateQR}
-                />
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setMode(mode === 'display' ? 'scan' : 'display')}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    {mode === 'display' ? 'Scanner un QR Code' : 'Afficher mon QR Code'}
+                  </button>
+                </div>
+
+                {mode === 'display' ? (
+                  <QRCodeDisplay
+                    employeeData={employeeData}
+                    onRegenerate={handleRegenerateQR}
+                  />
+                ) : (
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <AttendanceScanner />
+                  </div>
+                )}
 
                 <AttendanceStatus
                   status={attendanceStatus?.status}

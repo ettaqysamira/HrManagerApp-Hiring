@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'react-qr-code';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const QRCodeDisplay = ({ employeeData, onRegenerate }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,18 +32,9 @@ const QRCodeDisplay = ({ employeeData, onRegenerate }) => {
     });
   };
 
-  const handleRegenerateClick = () => {
-    setShowRegenerateConfirm(true);
-  };
 
-  const handleConfirmRegenerate = () => {
-    onRegenerate();
-    setShowRegenerateConfirm(false);
-  };
 
-  const handleCancelRegenerate = () => {
-    setShowRegenerateConfirm(false);
-  };
+  const qrValue = employeeData?.employeeId || "NO-ID";
 
   return (
     <div className="bg-card rounded-lg border border-border p-8">
@@ -51,49 +43,14 @@ const QRCodeDisplay = ({ employeeData, onRegenerate }) => {
         <p className="text-sm text-muted-foreground">Scannez ce code pour enregistrer votre présence</p>
       </div>
       <div className="flex flex-col items-center justify-center mb-6">
-        <div className="bg-white p-8 rounded-lg border-4 border-primary shadow-lg mb-4">
-          <div className="w-64 h-64 flex items-center justify-center">
-            <svg viewBox="0 0 256 256" className="w-full h-full">
-              <rect width="256" height="256" fill="white"/>
-              <g fill="black">
-                <rect x="0" y="0" width="32" height="32"/>
-                <rect x="32" y="0" width="32" height="32"/>
-                <rect x="64" y="0" width="32" height="32"/>
-                <rect x="96" y="0" width="32" height="32"/>
-                <rect x="128" y="0" width="32" height="32"/>
-                <rect x="160" y="0" width="32" height="32"/>
-                <rect x="192" y="0" width="32" height="32"/>
-                <rect x="0" y="32" width="32" height="32"/>
-                <rect x="192" y="32" width="32" height="32"/>
-                <rect x="0" y="64" width="32" height="32"/>
-                <rect x="64" y="64" width="32" height="32"/>
-                <rect x="96" y="64" width="32" height="32"/>
-                <rect x="128" y="64" width="32" height="32"/>
-                <rect x="192" y="64" width="32" height="32"/>
-                <rect x="0" y="96" width="32" height="32"/>
-                <rect x="64" y="96" width="32" height="32"/>
-                <rect x="96" y="96" width="32" height="32"/>
-                <rect x="128" y="96" width="32" height="32"/>
-                <rect x="192" y="96" width="32" height="32"/>
-                <rect x="0" y="128" width="32" height="32"/>
-                <rect x="64" y="128" width="32" height="32"/>
-                <rect x="96" y="128" width="32" height="32"/>
-                <rect x="128" y="128" width="32" height="32"/>
-                <rect x="192" y="128" width="32" height="32"/>
-                <rect x="0" y="160" width="32" height="32"/>
-                <rect x="192" y="160" width="32" height="32"/>
-                <rect x="0" y="192" width="32" height="32"/>
-                <rect x="32" y="192" width="32" height="32"/>
-                <rect x="64" y="192" width="32" height="32"/>
-                <rect x="96" y="192" width="32" height="32"/>
-                <rect x="128" y="192" width="32" height="32"/>
-                <rect x="160" y="192" width="32" height="32"/>
-                <rect x="192" y="192" width="32" height="32"/>
-                <rect x="32" y="224" width="32" height="32"/>
-                <rect x="96" y="224" width="32" height="32"/>
-                <rect x="160" y="224" width="32" height="32"/>
-              </g>
-            </svg>
+        <div className="bg-white p-6 rounded-lg border-4 border-primary shadow-lg mb-4">
+          <div className="w-48 h-48 flex items-center justify-center">
+            <QRCode
+              size={256}
+              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              value={qrValue}
+              viewBox={`0 0 256 256`}
+            />
           </div>
         </div>
 
@@ -120,15 +77,7 @@ const QRCodeDisplay = ({ employeeData, onRegenerate }) => {
         </div>
       </div>
       <div className="flex gap-3">
-        <Button
-          variant="outline"
-          fullWidth
-          iconName="RefreshCw"
-          iconPosition="left"
-          onClick={handleRegenerateClick}
-        >
-          Régénérer le Code
-        </Button>
+
         <Button
           variant="default"
           fullWidth
@@ -138,33 +87,7 @@ const QRCodeDisplay = ({ employeeData, onRegenerate }) => {
           Télécharger
         </Button>
       </div>
-      {showRegenerateConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-card rounded-lg border border-border p-6 max-w-md w-full mx-4 shadow-2xl">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
-                <Icon name="AlertTriangle" size={24} color="var(--color-warning)" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  Régénérer le Code QR ?
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Cette action générera un nouveau code QR unique. L'ancien code ne sera plus valide pour le pointage.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={handleCancelRegenerate}>
-                Annuler
-              </Button>
-              <Button variant="warning" onClick={handleConfirmRegenerate}>
-                Confirmer
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };

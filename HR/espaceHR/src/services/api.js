@@ -28,7 +28,6 @@ export const employeeApi = {
     updateEmployee: (id, data) => api.put(`/Employees/${id}`, data),
     deleteEmployee: (id) => api.delete(`/Employees/${id}`),
 
-    // Conges
     getConges: () => api.get('/Conges'),
     createConge: (data) => api.post('/Conges', data),
     updateCongeStatus: (id, status) => api.put(`/Conges/${id}/status`, { status }),

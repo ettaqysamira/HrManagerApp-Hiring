@@ -9,6 +9,7 @@ import ContractAdministration from './pages/contract-administration';
 import HRDashboardOverview from './pages/hr-dashboard-overview';
 import CandidateManagement from './pages/candidate-management';
 import AbsenceAnalyticsDashboard from './pages/absence-analytics-dashboard';
+import HRAttendanceDashboard from './pages/hr-attendance-dashboard';
 import CandidateProfile from "./pages/candidate-management/components/CandidateProfile";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -47,6 +48,7 @@ const Routes = () => {
                 <Route path="/absence-analytics-dashboard" element={<AbsenceAnalyticsDashboard />} />
                 <Route path="/leave-management-system" element={<LeaveManagementSystemHR />} />
                 <Route path="/employee-management" element={<EmployeeManagement />} />
+                <Route path="/hr-attendance-dashboard" element={<HRAttendanceDashboard />} />
               </Route>
 
               {/* Shared Routes (HR & Employee) */}

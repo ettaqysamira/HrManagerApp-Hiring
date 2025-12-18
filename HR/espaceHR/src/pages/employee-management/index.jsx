@@ -30,6 +30,7 @@ const EmployeeManagement = () => {
     statuses: [],
     locations: []
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,11 +126,44 @@ const EmployeeManagement = () => {
     setShowQuickEdit(true);
   }, []);
 
-  const handleSaveQuickEdit = useCallback((updatedEmployee) => {
-    console.log('Saving employee:', updatedEmployee);
-    setShowQuickEdit(false);
-    setEditingEmployee(null);
-    fetchEmployees();
+  const handleSaveQuickEdit = useCallback(async (updatedEmployee) => {
+    try {
+      await employeeApi.updateEmployee(updatedEmployee.id, updatedEmployee);
+      toast({
+        title: "Succès",
+        description: "Employé mis à jour avec succès",
+      });
+      setShowQuickEdit(false);
+      setEditingEmployee(null);
+      fetchEmployees();
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour l'employé",
+        variant: "destructive"
+      });
+    }
+  }, [fetchEmployees]);
+
+  const handleDelete = useCallback(async (employee) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet employé ?')) {
+      try {
+        await employeeApi.deleteEmployee(employee.id);
+        toast({
+          title: "Succès",
+          description: "Employé supprimé avec succès",
+        });
+        fetchEmployees();
+      } catch (error) {
+        console.error("Error deleting employee:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer l'employé",
+          variant: "destructive"
+        });
+      }
+    }
   }, [fetchEmployees]);
 
   const handleBulkAction = useCallback((action) => {
@@ -144,12 +178,21 @@ const EmployeeManagement = () => {
     setShowAddModal(true);
   }, []);
 
-  const handleSearch = useCallback((searchTerm) => {
-    console.log('Searching for:', searchTerm);
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
   }, []);
 
-  const totalPages = Math.ceil(employees?.length / pageSize);
-  const paginatedEmployees = employees?.slice(
+  const filteredEmployees = employees.filter(employee =>
+    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.employeeId?.toString().includes(searchTerm)
+  );
+
+  const totalPages = Math.ceil(filteredEmployees.length / pageSize);
+  const paginatedEmployees = filteredEmployees.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -207,7 +250,8 @@ const EmployeeManagement = () => {
                       onSort={handleSort}
                       sortConfig={sortConfig}
                       onEmployeeClick={handleEmployeeClick}
-                      onQuickEdit={handleQuickEdit} />
+                      onQuickEdit={handleQuickEdit}
+                      onDelete={handleDelete} />
                   )}
 
                 </div>

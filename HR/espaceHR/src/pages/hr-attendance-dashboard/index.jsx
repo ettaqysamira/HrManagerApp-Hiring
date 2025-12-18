@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AttendanceService from '../../services/attendance.service';
+import PresenceService from '../../services/presence.service';
 import { employeeApi } from '../../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import Input from '../../components/ui/Input';
@@ -25,16 +25,16 @@ const HRAttendanceDashboard = () => {
             const employeesResponse = await employeeApi.getEmployees();
             const employees = employeesResponse?.data || [];
 
-            const attendanceResponse = await AttendanceService.getAttendances(selectedDate);
-            const attendances = attendanceResponse?.data || [];
+            const presenceResponse = await PresenceService.getPresences(selectedDate);
+            const presences = presenceResponse?.data || [];
 
             const report = employees.map(emp => {
-                const employeeAttendances = attendances.filter(a => a.employeeId === emp.id || a.employeeId === emp.employeeId);
+                const employeePresences = presences.filter(a => a.employeeId === emp.id || a.employeeId === emp.employeeId);
 
-                const morning = employeeAttendances.find(a => a.shift === 'Morning');
-                const evening = employeeAttendances.find(a => a.shift === 'Evening');
+                const morning = employeePresences.find(a => a.shift === 'Morning');
+                const evening = employeePresences.find(a => a.shift === 'Evening');
 
-                const isPresent = employeeAttendances.length > 0;
+                const isPresent = employeePresences.length > 0;
 
                 return {
                     id: emp.id,
@@ -112,19 +112,19 @@ const HRAttendanceDashboard = () => {
                                 title="Total Employés"
                                 value={stats.total}
                                 icon="Users"
-                                color="#3b82f6" 
+                                color="#3b82f6"
                             />
                             <StatCard
                                 title="Présents Aujourd'hui"
                                 value={stats.present}
                                 icon="UserCheck"
-                                color="#22c55e" 
+                                color="#22c55e"
                             />
                             <StatCard
                                 title="Absents"
                                 value={stats.absent}
                                 icon="UserX"
-                                color="#ef4444" 
+                                color="#ef4444"
                             />
                         </div>
 
@@ -204,8 +204,8 @@ const HRAttendanceDashboard = () => {
                                                         {row.morning ? (
                                                             <div className="flex flex-col items-start gap-1">
                                                                 <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${row.morning.status === 'Accepted'
-                                                                        ? 'bg-green-50 text-green-700 border border-green-100'
-                                                                        : 'bg-red-50 text-red-700 border border-red-100'
+                                                                    ? 'bg-green-50 text-green-700 border border-green-100'
+                                                                    : 'bg-red-50 text-red-700 border border-red-100'
                                                                     }`}>
                                                                     <Icon name={row.morning.status === 'Accepted' ? 'CheckCircle' : 'XCircle'} size={12} />
                                                                     {row.morning.time.substring(0, 5)}
@@ -223,8 +223,8 @@ const HRAttendanceDashboard = () => {
                                                         {row.evening ? (
                                                             <div className="flex flex-col items-start gap-1">
                                                                 <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${row.evening.status === 'Accepted'
-                                                                        ? 'bg-green-50 text-green-700 border border-green-100'
-                                                                        : 'bg-red-50 text-red-700 border border-red-100'
+                                                                    ? 'bg-green-50 text-green-700 border border-green-100'
+                                                                    : 'bg-red-50 text-red-700 border border-red-100'
                                                                     }`}>
                                                                     <Icon name={row.evening.status === 'Accepted' ? 'CheckCircle' : 'XCircle'} size={12} />
                                                                     {row.evening.time.substring(0, 5)}
@@ -240,8 +240,8 @@ const HRAttendanceDashboard = () => {
 
                                                     <td className="px-6 py-4 text-center">
                                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${row.status === 'Présent'
-                                                                ? 'bg-green-100 text-green-700 ring-1 ring-green-600/20'
-                                                                : 'bg-red-100 text-red-700 ring-1 ring-red-600/20'
+                                                            ? 'bg-green-100 text-green-700 ring-1 ring-green-600/20'
+                                                            : 'bg-red-100 text-red-700 ring-1 ring-red-600/20'
                                                             }`}>
                                                             {row.status}
                                                         </span>

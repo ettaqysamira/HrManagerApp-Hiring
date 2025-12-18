@@ -62,7 +62,7 @@ const Sidebar = () => {
     {
       label: 'Gestion Présence',
       path: '/hr-attendance-dashboard',
-      icon: 'Clock', 
+      icon: 'Clock',
       badge: null,
     },
     {
@@ -70,6 +70,12 @@ const Sidebar = () => {
       path: '/leave-management-system',
       icon: 'Calendar',
       badge: 5,
+    },
+    {
+      label: 'Offres d\'Emploi',
+      path: '/job-offers',
+      icon: 'Briefcase',
+      badge: null,
     },
     {
       label: 'Gestion Candidats',

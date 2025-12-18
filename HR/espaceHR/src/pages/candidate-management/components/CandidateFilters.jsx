@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, Search } from 'lucide-react';
 import Button from '../../../components/ui/Button';
-import Select from '../../../components/ui/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select2";
 import Input from '../../../components/ui/Input';
 
 const CandidateFilters = ({ filters, onFilterChange, onExport }) => {
@@ -18,67 +18,93 @@ const CandidateFilters = ({ filters, onFilterChange, onExport }) => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
-                placeholder="Rechercher un candidat..."
+                placeholder="Rechercher par compétence (ex: Java, React)..."
                 className="pl-10"
+                value={filters?.skill || ''}
+                onChange={(e) => handleFilterUpdate('skill', e.target.value)}
               />
             </div>
           </div>
 
-          <Select
-            value={filters?.position}
-            onChange={(e) => handleFilterUpdate('position', e?.target?.value)}
-            className="sm:w-48"
-          >
-            <option value="all">Tous les postes</option>
-            <option value="fullstack">Développeur Full Stack</option>
-            <option value="project-manager">Chef de Projet</option>
-            <option value="ux-designer">Designer UX/UI</option>
-            <option value="data-analyst">Analyste de Données</option>
-            <option value="mobile-dev">Développeur Mobile</option>
-            <option value="devops">DevOps Engineer</option>
-          </Select>
+          <div className="sm:w-48">
+            <Select
+              value={filters?.position}
+              onValueChange={(value) => handleFilterUpdate('position', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Tous les postes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les postes</SelectItem>
+                <SelectItem value="fullstack">Développeur Full Stack</SelectItem>
+                <SelectItem value="project-manager">Chef de Projet</SelectItem>
+                <SelectItem value="ux-designer">Designer UX/UI</SelectItem>
+                <SelectItem value="data-analyst">Analyste de Données</SelectItem>
+                <SelectItem value="mobile-dev">Développeur Mobile</SelectItem>
+                <SelectItem value="devops">DevOps Engineer</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select
-            value={filters?.status}
-            onChange={(e) => handleFilterUpdate('status', e?.target?.value)}
-            className="sm:w-48"
-          >
-            <option value="all">Tous les statuts</option>
-            <option value="new">Nouveau</option>
-            <option value="screening">Screening Initial</option>
-            <option value="interview-hr">Entretien RH</option>
-            <option value="interview-tech">Entretien Technique</option>
-            <option value="interview-final">Entretien Final</option>
-            <option value="offer-sent">Offre Envoyée</option>
-            <option value="accepted">Accepté</option>
-            <option value="rejected">Rejeté</option>
-          </Select>
+          <div className="sm:w-48">
+            <Select
+              value={filters?.status}
+              onValueChange={(value) => handleFilterUpdate('status', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Tous les statuts" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="new">Nouveau</SelectItem>
+                <SelectItem value="screening">Screening Initial</SelectItem>
+                <SelectItem value="interview-hr">Entretien RH</SelectItem>
+                <SelectItem value="interview-tech">Entretien Technique</SelectItem>
+                <SelectItem value="interview-final">Entretien Final</SelectItem>
+                <SelectItem value="offer-sent">Offre Envoyée</SelectItem>
+                <SelectItem value="accepted">Accepté</SelectItem>
+                <SelectItem value="rejected">Rejeté</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select
-            value={filters?.source}
-            onChange={(e) => handleFilterUpdate('source', e?.target?.value)}
-            className="sm:w-48"
-          >
-            <option value="all">Toutes les sources</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="indeed">Indeed</option>
-            <option value="career-site">Site Carrières</option>
-            <option value="referral">Référence</option>
-            <option value="recruitment-agency">Agence de Recrutement</option>
-          </Select>
+          <div className="sm:w-48">
+            <Select
+              value={filters?.source}
+              onValueChange={(value) => handleFilterUpdate('source', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Toutes les sources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les sources</SelectItem>
+                <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectItem value="indeed">Indeed</SelectItem>
+                <SelectItem value="career-site">Site Carrières</SelectItem>
+                <SelectItem value="referral">Référence</SelectItem>
+                <SelectItem value="recruitment-agency">Agence de Recrutement</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Select
-            value={filters?.dateRange}
-            onChange={(e) => handleFilterUpdate('dateRange', e?.target?.value)}
-            className="sm:w-48"
-          >
-            <option value="all">Toutes les dates</option>
-            <option value="today">Aujourd'hui</option>
-            <option value="week">Cette semaine</option>
-            <option value="month">Ce mois-ci</option>
-            <option value="quarter">Ce trimestre</option>
-            <option value="year">Cette année</option>
-          </Select>
+          <div className="sm:w-48">
+            <Select
+              value={filters?.dateRange}
+              onValueChange={(value) => handleFilterUpdate('dateRange', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Toutes les dates" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les dates</SelectItem>
+                <SelectItem value="today">Aujourd'hui</SelectItem>
+                <SelectItem value="week">Cette semaine</SelectItem>
+                <SelectItem value="month">Ce mois-ci</SelectItem>
+                <SelectItem value="quarter">Ce trimestre</SelectItem>
+                <SelectItem value="year">Cette année</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="flex gap-2">

@@ -13,39 +13,70 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 
+import CandidateService from "../services/candidate.service";
+
 interface ApplicationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   jobTitle: string;
+  jobId: number | null;
 }
 
 export const ApplicationDialog = ({
   open,
   onOpenChange,
   jobTitle,
+  jobId,
 }: ApplicationDialogProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [fileName, setFileName] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
+      setResumeFile(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Application submitted successfully!");
-    onOpenChange(false);
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setCoverLetter("");
-    setFileName("");
+    if (!resumeFile) {
+      toast.error("Please upload your resume.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append("FullName", `${firstName} ${lastName}`);
+      formData.append("Email", email);
+      if (jobId) {
+        formData.append("JobOfferId", jobId.toString());
+      }
+      formData.append("Resume", resumeFile);
+
+      await CandidateService.apply(formData);
+
+      toast.success("Application submitted successfully!");
+      onOpenChange(false);
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setCoverLetter("");
+      setFileName("");
+      setResumeFile(null);
+    } catch (error) {
+      toast.error("Failed to submit application. Please try again.");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

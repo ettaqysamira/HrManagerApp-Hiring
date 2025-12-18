@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import AttendanceService from '../services/attendance.service';
+import PresenceService from '../services/presence.service';
 import { authService as AuthService } from '../services/auth.service';
 import { toast } from 'sonner';
 
@@ -56,7 +56,7 @@ const AttendanceScanner = () => {
             }
 
             const employeeId = user.id || user.employeeId;
-            const response = await AttendanceService.scan(employeeId, shift, qrContent);
+            const response = await PresenceService.scan(employeeId, shift, qrContent);
 
             if (response.data.status === "Accepted") {
                 toast.success(`Pointage accepté! Heure: ${response.data.time}`);

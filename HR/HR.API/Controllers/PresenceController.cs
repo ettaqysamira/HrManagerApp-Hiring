@@ -50,11 +50,8 @@ namespace HR.API.Controllers
             bool isLate = false;
             string notes = "";
 
-            // Time Validation Logic
-            // Morning: Limit 09:00:00
-            // Evening: Limit 17:00:00 (5 PM) 
             
-            TimeSpan morningLimit = new TimeSpan(9, 30, 0); 
+            TimeSpan morningLimit = new TimeSpan(3, 30, 0); 
             TimeSpan eveningLimit = new TimeSpan(18, 0, 0); 
 
             if (request.Shift == "Morning")

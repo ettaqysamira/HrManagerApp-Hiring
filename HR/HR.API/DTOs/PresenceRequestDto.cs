@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HR.API.DTOs
 {
-    public class AttendanceRequestDto
+    public class PresenceRequestDto
     {
         [Required]
         public int EmployeeId { get; set; }

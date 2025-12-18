@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HR.API.Models
 {
-    public class Attendance
+    public class Presence
     {
         [Key]
         public int Id { get; set; }

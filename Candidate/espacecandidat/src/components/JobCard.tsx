@@ -12,7 +12,7 @@ interface JobCardProps {
   type: string;
   postedAt: string;
   onApply: () => void;
-  index: number;
+  index?: number;
 }
 
 export const JobCard = ({
@@ -30,7 +30,7 @@ export const JobCard = ({
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      transition={{ duration: 0.5, delay: (index || 0) * 0.1 }}
     >
       <Card className="group hover:shadow-lg transition-all duration-300 hover:border-primary/20 h-full hover:border-l-4 hover:border-l-primary">
         <CardHeader>
@@ -59,9 +59,9 @@ export const JobCard = ({
               <span>{postedAt}</span>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={onApply}
-            variant="ghost" 
+            variant="ghost"
             className="w-full group/btn text-primary hover:text-primary hover:bg-primary/5 font-semibold"
           >
             Apply Now

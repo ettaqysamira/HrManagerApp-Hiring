@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Filter } from "lucide-react";
 import { JobCard } from "../components/JobCard";
@@ -11,67 +11,50 @@ import OurValues from "../components/OurValues";
 import Testimonials from "../components/Testimonials";
 import FAQ from "../components/FAQ";
 import { Animation } from "../components/ui/animation";
-
-
-const jobs = [
-  {
-    category: "Ingénierie",
-    title: "Développeur Frontend Senior",
-    description: "Nous recherchons un développeur Frontend expérimenté pour diriger nos initiatives UI/UX en utilisant React et Tailwind.",
-    location: "Casablanca",
-    type: "Temps plein",
-    posted: "Il y a 2 jours"
-  },
-  {
-    category: "Design",
-    title: "Designer Produit",
-    description: "Rejoignez notre équipe de design primée pour créer des expériences utilisateur belles et intuitives.",
-    location: "Rabat",
-    type: "Temps plein",
-    posted: "Il y a 3 jours"
-  },
-  {
-    category: "Ingénierie",
-    title: "Ingénieur Backend (.NET)",
-    description: "Aidez-nous à faire évoluer notre infrastructure backend et à construire des API robustes pour notre base d’utilisateurs en croissance.",
-    location: "Tanger",
-    type: "Contrat",
-    posted: "Il y a 1 semaine"
-  },
-  {
-    category: "Ressources humaines",
-    title: "Spécialiste RH",
-    description: "Gérer les processus de recrutement et garantir une excellente expérience candidat pour tous les postulants.",
-    location: "Casablanca",
-    type: "Temps partiel",
-    posted: "Il y a 1 semaine"
-  },
-  {
-    category: "Marketing",
-    title: "Responsable Marketing",
-    description: "Piloter notre stratégie de croissance et diriger des campagnes marketing globales sur tous les canaux.",
-    location: "Salé",
-    type: "Temps plein",
-    posted: "Il y a 2 semaines"
-  },
-  {
-    category: "Support",
-    title: "Responsable de la Réussite Client",
-    description: "Assurer la réussite et la croissance de nos clients grands comptes avec notre plateforme.",
-    location: "Casablanca",
-    type: "Temps plein",
-    posted: "À l’instant"
-  }
-];
-
-
+import JobOfferService from "../services/jobOffer.service";
 
 const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState("");
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApply = (jobTitle: string) => {
-    setSelectedJob(jobTitle);
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const data = await JobOfferService.getAll();
+        console.log("Fetched jobs:", data);
+
+        const formattedJobs = data
+          .filter((offer: any) => offer.status === 'Open')
+          .map((offer: any) => ({
+            id: offer.id,
+            category: "General", 
+            title: offer.title,
+            description: offer.description,
+            location: offer.location,
+            type: "Temps plein", 
+            posted: new Date(offer.postedDate).toLocaleDateString(),
+            requirements: offer.requirements
+          }));
+
+        setJobs(formattedJobs);
+      } catch (error) {
+        console.error("Failed to load jobs", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [selectedJobTitle, setSelectedJobTitle] = useState("");
+
+  const handleApply = (job: any) => {
+    setSelectedJobId(job.id);
+    setSelectedJobTitle(job.title);
     setDialogOpen(true);
   };
 
@@ -89,23 +72,34 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="flex items-center justify-between mb-8"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">Open Positions</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Postes ouverts</h2>
             <Button variant="outline" size="sm" className="gap-2">
               <Filter className="h-4 w-4" />
               Filter
             </Button>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job, index) => (
-              <JobCard
-                key={job.id}
-                {...job}
-                index={index}
-                onApply={() => handleApply(job.title)}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-20">Chargement des offres...</div>
+          ) : jobs.length === 0 ? (
+            <div className="text-center py-20 text-muted-foreground">Aucun poste ouvert pour le moment.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {jobs.map((job, index) => (
+                <JobCard
+                  key={job.id}
+                  category={job.category}
+                  title={job.title}
+                  description={job.description}
+                  location={job.location}
+                  type={job.type}
+                  postedAt={job.posted}
+                  index={index}
+                  onApply={() => handleApply(job)}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </Animation>
 
@@ -117,7 +111,8 @@ const Index = () => {
       <ApplicationDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        jobTitle={selectedJob}
+        jobTitle={selectedJobTitle}
+        jobId={selectedJobId}
       />
     </div>
   );

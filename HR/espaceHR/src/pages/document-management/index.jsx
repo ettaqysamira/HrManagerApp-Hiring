@@ -32,7 +32,6 @@ const DocumentManagement = () => {
     };
 
     const handleDownload = (contractId) => {
-        // Placeholder for PDF download
         alert(`Téléchargement du contrat #${contractId} (Fonctionnalité à venir)`);
     };
 

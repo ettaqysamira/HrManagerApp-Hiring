@@ -8,7 +8,7 @@ import { useSidebar } from '../../components/navigation/Sidebar';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import ContractStatusCard from './components/ContractStatusCard';
-import ContractDocumentView from './components/ContractDocumentView'; // New component
+import ContractDocumentView from './components/ContractDocumentView'; 
 import { contractApi, employeeApi } from '../../services/api';
 import { toast } from '../../hooks/use-toast';
 import { Card, CardContent } from '../../components/ui/card';

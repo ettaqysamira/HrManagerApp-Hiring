@@ -10,7 +10,7 @@ import AttendanceStats from './components/AttendanceStats';
 import IntegrationStatus from './components/IntegrationStatus';
 import QuickActions from './components/QuickActions';
 import AttendanceScanner from '../AttendanceScanner';
-import AttendanceService from '../../services/attendance.service';
+import PresenceService from '../../services/presence.service';
 import { authService as AuthService } from '../../services/auth.service';
 
 const QRCodeAttendanceSystem = () => {
@@ -126,7 +126,7 @@ const QRCodeAttendanceSystem = () => {
         const user = AuthService.getCurrentUser();
         const employeeId = user?.id || user?.employeeId;
         if (employeeId) {
-          const response = await AttendanceService.getAttendances(null, employeeId);
+          const response = await PresenceService.getAttendances(null, employeeId);
           if (response.data && Array.isArray(response.data)) {
             const mappedHistory = response.data.map(a => ({
               id: a.id,

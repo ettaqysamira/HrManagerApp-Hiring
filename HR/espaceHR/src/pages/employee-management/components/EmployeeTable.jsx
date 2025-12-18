@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
-const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelectAll, onSort, sortConfig, onEmployeeClick, onQuickEdit }) => {
+const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelectAll, onSort, sortConfig, onEmployeeClick, onQuickEdit, onDelete }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
 
   const columns = [
     { key: 'select', label: '', width: '40px', sortable: false },
     { key: 'employeeId', label: 'ID', width: '80px', sortable: true },
-    { key: 'name', label: 'Nom', width: 'auto', sortable: true },
+    { key: 'name', label: 'Nom', width: '300px', sortable: true },
     { key: 'department', label: 'Département', width: '150px', sortable: true },
     { key: 'position', label: 'Poste', width: '180px', sortable: true },
     { key: 'contractStatus', label: 'Contrat', width: '120px', sortable: true },
@@ -99,7 +99,7 @@ const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelec
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm font-medium text-foreground">{employee?.employeeId}</span>
+                  <span className="text-sm  text-foreground" title={employee?.employeeId}>{employee?.employeeId?.toString().substring(0, 8)}</span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelec
                       alt={employee?.avatarAlt}
                       className="w-8 h-8 rounded-full object-cover"
                     />
-                    <span className="text-sm font-medium text-foreground">{employee?.name}</span>
+                    <span className="text-sm text-foreground">{employee?.name}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -143,10 +143,11 @@ const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelec
                       <Icon name="Edit2" size={16} color="var(--color-primary)" />
                     </button>
                     <button
-                      className="p-1 rounded hover:bg-accent/10 transition-colors"
-                      aria-label="Plus d'options"
+                      onClick={(e) => { e.stopPropagation(); onDelete?.(employee); }}
+                      className="p-1 rounded hover:bg-destructive/10 transition-colors"
+                      aria-label="Supprimer"
                     >
-                      <Icon name="MoreVertical" size={16} color="var(--color-muted-foreground)" />
+                      <Icon name="Trash2" size={16} color="var(--color-destructive)" />
                     </button>
                   </div>
                 </td>

@@ -10,6 +10,7 @@ import HRDashboardOverview from './pages/hr-dashboard-overview';
 import CandidateManagement from './pages/candidate-management';
 import AbsenceAnalyticsDashboard from './pages/absence-analytics-dashboard';
 import HRAttendanceDashboard from './pages/hr-attendance-dashboard';
+import JobOfferManagement from './pages/job-offers';
 import CandidateProfile from "./pages/candidate-management/components/CandidateProfile";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -24,6 +25,7 @@ import LeaveManagementSystemEmployee from './pages/leave-management-system1';
 import EmployeeDashboard from './pages/employee-dashboard';
 import EmployeeProfileManagement from './pages/employee-profile-management';
 import DocumentManagement from './pages/document-management';
+import Careers from './pages/careers';
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -49,6 +51,7 @@ const Routes = () => {
                 <Route path="/leave-management-system" element={<LeaveManagementSystemHR />} />
                 <Route path="/employee-management" element={<EmployeeManagement />} />
                 <Route path="/hr-attendance-dashboard" element={<HRAttendanceDashboard />} />
+                <Route path="/job-offers" element={<JobOfferManagement />} />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['HR', 'Employee', 'Employé']} />}>
@@ -65,6 +68,7 @@ const Routes = () => {
               </Route>
 
               <Route path="/" element={<Index />} />
+              <Route path="/careers" element={<Careers />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </RouterRoutes>

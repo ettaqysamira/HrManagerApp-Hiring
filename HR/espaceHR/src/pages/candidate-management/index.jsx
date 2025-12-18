@@ -12,17 +12,22 @@ import PipelineVisualization from './components/PipelineVisualization';
 import CandidateFilters from './components/CandidateFilters';
 import BulkActionsToolbar from './components/BulkActionsToolbar';
 
+import CandidateService from '../../services/candidate.service';
+
 const CandidateManagement = () => {
   const navigate = useNavigate();
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [candidatesData, setCandidatesData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [filters, setFilters] = useState({
     position: 'all',
     status: 'all',
     source: 'all',
-    dateRange: 'all'
+    dateRange: 'all',
+    skill: '' 
   });
 
   const metricsData = [
@@ -54,9 +59,9 @@ const CandidateManagement = () => {
       iconColor: "var(--color-success)"
     },
     {
-      title: "Délai Moyen d\'Embauche",
+      title: "Délai Moyen d'Embauche",
       value: "32j",
-      subtitle: "Temps d\'embauche",
+      subtitle: "Temps d'embauche",
       trend: "down",
       trendValue: "-4 jours",
       icon: "Clock",
@@ -64,79 +69,36 @@ const CandidateManagement = () => {
     }
   ];
 
-  const candidatesData = [
-    {
-      id: 1,
-      name: "Samira ETTAQY",
-      position: "Développeur Full Stack",
-      applicationDate: "2025-11-25",
-      stage: "Entretien Technique",
-      source: "LinkedIn",
-      rating: 4.5,
-      email: "sophie.dubois@email.com",
-      phone: "+33 6 12 34 56 78",
-      experience: "5 ans",
-      skills: ["React", "Node.js", "PostgreSQL", "AWS"],
-      resumeUrl: "#",
-      interviews: [
-        { date: "2025-11-28", type: "RH", interviewer: "Marie Martin", notes: "Excellent profil technique" }
-      ],
-      assessmentScores: { technical: 85, cultural: 90, communication: 88 }
-    },
-   
-    
-    {
-      id: 5,
-      name: "Alae Kamal",
-      position: "Développeur Mobile",
-      applicationDate: "2025-11-18",
-      stage: "Rejeté",
-      source: "Indeed",
-      rating: 3.5,
-      email: "julie.roux@email.com",
-      phone: "+33 6 56 78 90 12",
-      experience: "2 ans",
-      skills: ["React Native", "Flutter", "iOS", "Android"],
-      resumeUrl: "#",
-      interviews: [
-        { date: "2025-11-21", type: "RH", interviewer: "Jean Dupont", notes: "Manque d\'expérience pour le poste" }
-      ],
-      assessmentScores: { technical: 70, cultural: 75, communication: 72 }
-    },
-    {
-      id: 6,
-      name: "Sawsan Hamzaoui",
-      position: "DevOps Engineer",
-      applicationDate: "2025-11-26",
-      stage: "Nouveau",
-      source: "LinkedIn",
-      rating: 4.3,
-      email: "pierre.moreau@email.com",
-      phone: "+33 6 67 89 01 23",
-      experience: "4 ans",
-      skills: ["Docker", "Kubernetes", "CI/CD", "AWS"],
-      resumeUrl: "#",
-      interviews: [],
-      assessmentScores: { technical: 0, cultural: 0, communication: 0 }
+  const fetchCandidates = async () => {
+    try {
+      setLoading(true);
+      const data = await CandidateService.getAll({ skill: filters.skill });
+      const mappedData = data.map(c => ({
+        ...c,
+        name: c.fullName,
+        applicationDate: c.appliedDate,
+        position: c.jobOffer ? c.jobOffer.title : 'N/A',
+        skills: c.skills ? c.skills.split(',').map(s => s.trim()) : [],
+        stage: 'Nouveau',
+        rating: 0,
+        source: 'Site Carrières',
+        experience: 'N/A'
+      }));
+      setCandidatesData(mappedData);
+    } catch (error) {
+      console.error("Error fetching candidates:", error);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const pipelineStages = [
-    { name: "Nouveau", count: 23, color: "#4A208A" },
-    { name: "Screening Initial", count: 18, color: "#8b5cf6" },
-    { name: "Entretien RH", count: 12, color: "#06b6d4" },
-    { name: "Entretien Technique", count: 8, color: "#10b981" },
-    { name: "Entretien Final", count: 5, color: "#f59e0b" },
-    { name: "Offre Envoyée", count: 3, color: "#14b8a6" },
-    { name: "Accepté", count: 2, color: "#22c55e" },
-    { name: "Rejeté", count: 15, color: "#ef4444" }
-  ];
+  };
 
   useEffect(() => {
-    if (candidatesData?.length > 0) {
-      setSelectedCandidate(candidatesData?.[0]);
-    }
-  }, []);
+    const timer = setTimeout(() => {
+      fetchCandidates();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [filters.skill]); 
+
 
   const handleCandidateSelect = (candidate) => {
     setSelectedCandidate(candidate);
@@ -181,10 +143,10 @@ const CandidateManagement = () => {
       <div className="min-h-screen bg-background">
         <Sidebar />
         <Header />
-        
-          <Breadcrumb />
+
+        <Breadcrumb />
         <main className="main-content">
-          
+
           <div className="px-6 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-semibold text-foreground mb-2">
@@ -201,7 +163,7 @@ const CandidateManagement = () => {
               ))}
             </div>
 
-            <CandidateFilters 
+            <CandidateFilters
               filters={filters}
               onFilterChange={handleFilterChange}
               onExport={handleExportReport}
@@ -224,9 +186,9 @@ const CandidateManagement = () => {
                   selectedCandidates={selectedCandidates}
                   onCandidateSelect={handleCandidateSelect}
                   onBulkSelection={handleBulkSelection}
-                    onPhoneClick={() => setShowProfile(true)} 
+                  onPhoneClick={() => setShowProfile(true)}
                 />
-                
+
 
               </div>
 
@@ -234,7 +196,7 @@ const CandidateManagement = () => {
                 <CandidateProfile candidate={selectedCandidate} />
               </div> */}
 
-              
+
               {/*<div className="lg:col-span-3">
                 <PipelineVisualization stages={pipelineStages} />
               </div>*/}

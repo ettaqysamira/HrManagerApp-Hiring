@@ -60,7 +60,7 @@ const OpenPositions = () => {
     <section id="positions" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-4xl font-bold text-foreground">Open Positions</h2>
+          <h2 className="text-4xl font-bold text-foreground">Postes ouverts</h2>
           <Button variant="outline" className="gap-2">
             <Filter className="w-4 h-4" />
             Filter

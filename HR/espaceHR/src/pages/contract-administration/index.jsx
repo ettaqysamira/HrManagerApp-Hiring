@@ -7,8 +7,8 @@ import QuickActionButton from '../../components/navigation/QuickActionButton';
 import { useSidebar } from '../../components/navigation/Sidebar';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import ContractStatusCard from './components/ContractStatusCard';
-import ContractDocumentView from './components/ContractDocumentView'; 
+import KPICard from '../hr-dashboard-overview/components/KPICard';
+import ContractDocumentView from './components/ContractDocumentView';
 import { contractApi, employeeApi } from '../../services/api';
 import { toast } from '../../hooks/use-toast';
 import { Card, CardContent } from '../../components/ui/card';
@@ -16,12 +16,12 @@ import Input from '../../components/ui/Input';
 
 const ContractAdministrationContent = () => {
   const { isCollapsed } = useSidebar();
-  const [selectedContract, setSelectedContract] = useState(null); 
+  const [selectedContract, setSelectedContract] = useState(null);
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); 
+  const [isEditing, setIsEditing] = useState(false);
 
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
@@ -158,9 +158,27 @@ const ContractAdministrationContent = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <ContractStatusCard title="Contrats Actifs" count={stats.active} icon="FileCheck" />
-            <ContractStatusCard title="Expire bientôt (<30j)" count={stats.expiring} icon="AlertCircle" />
-            <ContractStatusCard title="Terminés/Expirés" count={stats.terminated} icon="XCircle" />
+            <KPICard
+              title="Contrats Actifs"
+              value={stats.active}
+              icon="FileCheck"
+              iconColor="var(--color-success)"
+              subtitle="En cours de validité"
+            />
+            <KPICard
+              title="Expire bientôt (<30j)"
+              value={stats.expiring}
+              icon="AlertCircle"
+              iconColor="var(--color-warning)"
+              subtitle="Renouvellement requis"
+            />
+            <KPICard
+              title="Terminés/Expirés"
+              value={stats.terminated}
+              icon="XCircle"
+              iconColor="var(--color-error)"
+              subtitle="Archives"
+            />
           </div>
 
           <Card>

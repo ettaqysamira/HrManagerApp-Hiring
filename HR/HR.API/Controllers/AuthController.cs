@@ -65,7 +65,7 @@ namespace HR.API.Controllers
             return GenerateJwtToken(employee.Id.ToString(), employee.FirstName, employee.LastName, employee.Email, userRole, isHr: false, employee: employee);
         }
 
-        private IActionResult GenerateJwtToken(string userId, string firstName, string lastName, string email, string role, bool isHr, Employee employee = null)
+        private IActionResult GenerateJwtToken(string userId, string firstName, string lastName, string email, string role, bool isHr, Employee? employee = null)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);

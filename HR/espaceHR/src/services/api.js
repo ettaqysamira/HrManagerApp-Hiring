@@ -47,4 +47,8 @@ export const contractApi = {
     deleteContract: (id) => api.delete(`/Contracts/${id}`),
 };
 
+export const dashboardApi = {
+    getStats: () => api.get('/Dashboard/stats'),
+};
+
 export default api;

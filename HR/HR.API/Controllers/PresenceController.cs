@@ -11,17 +11,17 @@ namespace HR.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AttendanceController : ControllerBase
+    public class PresenceController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public AttendanceController(AppDbContext context)
+        public PresenceController(AppDbContext context)
         {
             _context = context;
         }
 
         [HttpPost]
-        public async Task<IActionResult> ClockIn([FromBody] AttendanceRequestDto request)
+        public async Task<IActionResult> ClockIn([FromBody] PresenceRequestDto request)
         {
             if (request.QrContent != "HR_ACCESS_2024")
             {
@@ -35,7 +35,7 @@ namespace HR.API.Controllers
             }
 
             var today = DateTime.Today;
-            var existing = await _context.Attendances
+            var existing = await _context.Presences
                 .Where(a => a.EmployeeId == request.EmployeeId && a.Date.Date == today && a.Shift == request.Shift)
                 .FirstOrDefaultAsync();
 
@@ -71,7 +71,7 @@ namespace HR.API.Controllers
                 }
             }
 
-            var attendance = new Attendance
+            var attendance = new Presence
             {
                 EmployeeId = request.EmployeeId,
                 Date = now,
@@ -83,7 +83,7 @@ namespace HR.API.Controllers
             };
 
 
-            _context.Attendances.Add(attendance);
+            _context.Presences.Add(attendance);
             await _context.SaveChangesAsync();
 
             return Ok(new 
@@ -95,9 +95,9 @@ namespace HR.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAttendances([FromQuery] DateTime? date, [FromQuery] int? employeeId)
+        public async Task<IActionResult> GetPresences([FromQuery] DateTime? date, [FromQuery] int? employeeId)
         {
-            var query = _context.Attendances.Include(a => a.Employee).AsQueryable();
+            var query = _context.Presences.Include(a => a.Employee).AsQueryable();
 
             if (date.HasValue)
             {

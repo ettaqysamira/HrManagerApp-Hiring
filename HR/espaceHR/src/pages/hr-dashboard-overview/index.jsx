@@ -12,72 +12,103 @@ import RecruitmentPipeline from './components/RecruitmentPipeline';
 import PriorityActionItem from './components/PriorityActionItem';
 import SystemStatusIndicator from './components/SystemStatusIndicator';
 import FilterToolbar from './components/FilterToolbar';
+import { employeeApi, dashboardApi } from '../../services/api';
 
 const HRDashboardOverview = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({ dateRange: 'month', department: 'all' });
+  const [workforceData, setWorkforceData] = useState([]);
+  const [stats, setStats] = useState({
+    totalEmployees: 0,
+    activeContracts: 0,
+    pendingLeaveRequests: 0,
+    openPositions: 0,
+    expiringContracts: 0,
+    totalApplications: 0,
+    absenceRate: 0
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [empRes, statsRes] = await Promise.all([
+          employeeApi.getEmployees(),
+          dashboardApi.getStats()
+        ]);
+
+        const employees = empRes.data;
+        setStats(statsRes.data);
+
+
+        const standardDepartments = ["IT", "Marketing", "Finance", "RH", "Commercial", "Production"];
+
+
+        const initialCounts = standardDepartments.reduce((acc, dept) => ({ ...acc, [dept]: 0 }), {});
+
+
+        const departmentCounts = employees.reduce((acc, emp) => {
+          const dept = emp.department || 'Non assigné';
+          acc[dept] = (acc[dept] || 0) + 1;
+          return acc;
+        }, initialCounts);
+
+        const chartData = Object.entries(departmentCounts).map(([name, count]) => ({
+          department: name,
+          employees: count
+        }));
+
+        setWorkforceData(chartData);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const kpiData = [
     {
       title: "Effectif Total",
-      value: "1,247",
+      value: stats.totalEmployees.toLocaleString(),
       subtitle: "Employés actifs",
       trend: "up",
-      trendValue: "+3.2%",
+      trendValue: "",
       icon: "Users",
       iconColor: "var(--color-primary)",
       onClick: () => navigate('/employee-management')
     },
     {
       title: "Contrats Actifs",
-      value: "1,189",
+      value: stats.activeContracts.toLocaleString(),
       subtitle: "CDI et CDD",
       trend: "up",
-      trendValue: "+1.8%",
+      trendValue: "",
       icon: "FileText",
       iconColor: "var(--color-accent)",
       onClick: () => navigate('/contract-administration')
     },
     {
       title: "Demandes de Congés",
-      value: "47",
-      subtitle: "En attente d\'approbation",
-      trend: "down",
-      trendValue: "-12%",
+      value: stats.pendingLeaveRequests.toString(),
+      subtitle: "En attente d'approbation",
+      trend: "neutral",
+      trendValue: "",
       icon: "Calendar",
       iconColor: "var(--color-warning)",
       onClick: () => navigate('/leave-management-system')
     },
     {
       title: "Postes Ouverts",
-      value: "23",
+      value: stats.openPositions.toString(),
       subtitle: "Recrutements en cours",
-      trend: "up",
-      trendValue: "+5 nouveaux",
+      trend: "neutral",
+      trendValue: "",
       icon: "Briefcase",
       iconColor: "var(--color-success)"
     },
     {
-      title: "Taux de Formation",
-      value: "87%",
-      subtitle: "Programmes complétés",
-      trend: "up",
-      trendValue: "+4.5%",
-      icon: "GraduationCap",
-      iconColor: "var(--color-primary)"
-    },
-    {
-      title: "Conformité",
-      value: "98.5%",
-      subtitle: "Documents à jour",
-      trend: "up",
-      trendValue: "+0.3%",
-      icon: "Shield",
-      iconColor: "var(--color-success)"
-    },
-    {
       title: "Contrats Expirant",
-      value: "15",
+      value: stats.expiringContracts.toString(),
       subtitle: "Dans les 30 prochains jours",
       trend: "neutral",
       trendValue: null,
@@ -85,60 +116,26 @@ const HRDashboardOverview = () => {
       iconColor: "var(--color-error)"
     },
     {
-      title: "Taux d\'Absence",
-      value: "3.2%",
-      subtitle: "Ce mois-ci",
-      trend: "down",
-      trendValue: "-0.8%",
+      title: "Taux d'Absence",
+      value: `${stats.absenceRate}%`,
+      subtitle: "Derniers 30 jours",
+      trend: "neutral",
+      trendValue: "",
       icon: "UserX",
       iconColor: "var(--color-warning)"
     },
     {
-      title: "Masse Salariale",
-      value: "€2.4M",
-      subtitle: "Mensuel",
-      trend: "up",
-      trendValue: "+2.1%",
-      icon: "Euro",
-      iconColor: "var(--color-accent)"
-    },
-    {
       title: "Candidatures",
-      value: "156",
-      subtitle: "Ce mois-ci",
+      value: stats.totalApplications.toString(),
+      subtitle: "Total reçues",
       trend: "up",
-      trendValue: "+18%",
+      trendValue: "",
       icon: "UserPlus",
       iconColor: "var(--color-primary)"
     },
-    {
-      title: "Turnover",
-      value: "8.3%",
-      subtitle: "Annuel",
-      trend: "down",
-      trendValue: "-1.2%",
-      icon: "TrendingDown",
-      iconColor: "var(--color-success)"
-    },
-    {
-      title: "Satisfaction",
-      value: "4.2/5",
-      subtitle: "Score moyen",
-      trend: "up",
-      trendValue: "+0.3",
-      icon: "Star",
-      iconColor: "var(--color-warning)"
-    }
   ];
 
-  const workforceData = [
-    { department: "IT", employees: 245 },
-    { department: "RH", employees: 87 },
-    { department: "Finance", employees: 156 },
-    { department: "Ventes", employees: 312 },
-    { department: "Marketing", employees: 178 },
-    { department: "Opérations", employees: 269 }
-  ];
+
 
   const absenceData = [
     { month: "Jan", sick: 45, vacation: 120, other: 23 },
@@ -258,10 +255,10 @@ const HRDashboardOverview = () => {
       <div className="min-h-screen bg-background">
         <Sidebar />
         <Header />
-        
+
         <main className="main-content">
           <Breadcrumb />
-          
+
           <div className="px-6 py-6">
             <div className="mb-6">
               <h1 className="text-3xl font-semibold text-foreground mb-2">
@@ -272,7 +269,7 @@ const HRDashboardOverview = () => {
               </p>
             </div>
 
-            <FilterToolbar 
+            <FilterToolbar
               onFilterChange={handleFilterChange}
               onExport={handleExport}
             />
@@ -310,7 +307,7 @@ const HRDashboardOverview = () => {
               </div>
             </div>
 
-           
+
 
           </div>
         </main>

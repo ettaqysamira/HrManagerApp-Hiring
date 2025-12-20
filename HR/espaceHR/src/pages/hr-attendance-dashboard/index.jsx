@@ -8,6 +8,7 @@ import Sidebar from '../../components/navigation/Sidebar';
 import Header from '../../components/navigation/Header';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
 import Icon from '../../components/AppIcon';
+import KPICard from '../hr-dashboard-overview/components/KPICard';
 
 const HRAttendanceDashboard = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -63,20 +64,6 @@ const HRAttendanceDashboard = () => {
         }
     };
 
-    const StatCard = ({ title, value, icon, color }) => (
-        <Card className="bg-white dark:bg-gray-800 border-none shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-6 flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-                    <h3 className="text-2xl font-bold" style={{ color: color }}>{value}</h3>
-                </div>
-                <div className={`p-3 rounded-full opacity-20`} style={{ backgroundColor: color }}>
-                    <Icon name={icon} size={24} color={color} />
-                </div>
-            </CardContent>
-        </Card>
-    );
-
     return (
         <SidebarProvider>
             <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
@@ -108,23 +95,26 @@ const HRAttendanceDashboard = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <StatCard
+                            <KPICard
                                 title="Total Employés"
                                 value={stats.total}
                                 icon="Users"
-                                color="#3b82f6"
+                                iconColor="#3b82f6"
+                                subtitle="Effectif enregistré"
                             />
-                            <StatCard
+                            <KPICard
                                 title="Présents Aujourd'hui"
                                 value={stats.present}
                                 icon="UserCheck"
-                                color="#22c55e"
+                                iconColor="#22c55e"
+                                subtitle="Pointages validés"
                             />
-                            <StatCard
+                            <KPICard
                                 title="Absents"
                                 value={stats.absent}
                                 icon="UserX"
-                                color="#ef4444"
+                                iconColor="#ef4444"
+                                subtitle="Absences non justifiées"
                             />
                         </div>
 

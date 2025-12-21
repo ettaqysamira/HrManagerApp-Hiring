@@ -2,18 +2,19 @@ import React from 'react';
 import { Star, Mail, Phone, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const CandidateTable = ({ 
-  candidates = [], 
-  selectedCandidate = null, 
+const CandidateTable = ({
+  candidates = [],
+  selectedCandidate = null,
   selectedCandidates = [],
   onCandidateSelect,
-  onBulkSelection
+  onBulkSelection,
+  onDecision
 }) => {
 
   const navigate = useNavigate();
 
   const handlePhoneClick = (e, candidate) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     navigate(`/candidate-management/candidate/${candidate.id}`, { state: { candidate } });
   };
 
@@ -49,7 +50,7 @@ const CandidateTable = ({
   };
 
   return (
-    <div className="card-elevated w-full">   
+    <div className="card-elevated w-full">
       <div className="p-6 border-b border-border">
         <h3 className="text-lg font-semibold text-foreground">Liste des Candidats</h3>
         <p className="text-sm text-muted-foreground mt-1">
@@ -74,7 +75,7 @@ const CandidateTable = ({
               <th className="text-left p-4">Date</th>
               <th className="text-left p-4">Étape</th>
               <th className="text-left p-4">Source</th>
-              <th className="text-left p-4">Note</th>
+              <th className="text-left p-4">Actions de Recrutement</th>
               <th className="text-left p-4">Actions</th>
             </tr>
           </thead>
@@ -83,9 +84,8 @@ const CandidateTable = ({
             {candidates.map((candidate) => (
               <tr
                 key={candidate.id}
-                className={`border-b border-border hover:bg-muted/20 cursor-pointer transition-colors ${
-                  selectedCandidate?.id === candidate.id ? 'bg-primary/5' : ''
-                }`}
+                className={`border-b border-border hover:bg-muted/20 cursor-pointer transition-colors ${selectedCandidate?.id === candidate.id ? 'bg-primary/5' : ''
+                  }`}
                 onClick={() => onCandidateSelect(candidate)}
               >
                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
@@ -98,13 +98,13 @@ const CandidateTable = ({
                 </td>
 
                 <td className="p-4">
-                  <p className="font-medium">{candidate.name}</p>
+                  <p className="font-medium text-foreground">{candidate.name}</p>
                   <p className="text-xs text-muted-foreground">{candidate.email}</p>
                 </td>
 
-                <td className="p-4">{candidate.position}</td>
+                <td className="p-4 text-foreground">{candidate.position}</td>
 
-                <td className="p-4">
+                <td className="p-4 text-foreground">
                   {new Date(candidate.applicationDate).toLocaleDateString('fr-FR')}
                 </td>
 
@@ -114,11 +114,29 @@ const CandidateTable = ({
                   </span>
                 </td>
 
-                <td className="p-4">{candidate.source}</td>
+                <td className="p-4 text-foreground">{candidate.source}</td>
 
-                <td className="p-4 flex items-center gap-1">
-                  <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                  {candidate.rating}
+                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2">
+                    {candidate.stage !== 'Accepté' && candidate.stage !== 'Rejeté' ? (
+                      <>
+                        <button
+                          className="px-2 py-1 bg-green-50 text-green-600 hover:bg-green-100 rounded text-xs font-medium border border-green-200 transition-colors"
+                          onClick={() => onDecision(candidate, 'accept')}
+                        >
+                          Accepter
+                        </button>
+                        <button
+                          className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-medium border border-red-200 transition-colors"
+                          onClick={() => onDecision(candidate, 'reject')}
+                        >
+                          Refuser
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs italic text-muted-foreground">Action traitée</span>
+                    )}
+                  </div>
                 </td>
 
                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
@@ -128,7 +146,7 @@ const CandidateTable = ({
                       <Mail size={16} />
                     </button>
 
-                    <button 
+                    <button
                       className="p-1.5 hover:bg-muted rounded-lg"
                       onClick={(e) => handlePhoneClick(e, candidate)}
                       title="Téléphone"
@@ -136,7 +154,7 @@ const CandidateTable = ({
                       <Phone size={16} />
                     </button>
 
-                    <button 
+                    <button
                       className="p-1.5 hover:bg-muted rounded-lg"
                       onClick={() => onCandidateSelect(candidate)}
                       title="Voir profil"

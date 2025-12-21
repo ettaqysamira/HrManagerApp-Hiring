@@ -21,7 +21,8 @@ const JobOfferManagement = () => {
     const fetchJobOffers = async () => {
         try {
             setLoading(true);
-            const data = await JobOfferService.getAll();
+            const responseData = await JobOfferService.getAll();
+            const data = Array.isArray(responseData) ? responseData : (responseData?.value || responseData?.data || []);
             setJobOffers(data);
         } catch (error) {
             console.error("Failed to fetch job offers:", error);
@@ -109,8 +110,8 @@ const JobOfferManagement = () => {
                                                         {new Date(offer.postedDate).toLocaleDateString()}
                                                     </div>
                                                     <div className="flex items-center">
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${offer.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                            {offer.status === 'Open' ? 'Ouverte' : 'Fermée'}
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${['open', 'ouverte'].includes((offer.status || offer.Status || '').toLowerCase()) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                            {['open', 'ouverte'].includes((offer.status || offer.Status || '').toLowerCase()) ? 'Ouverte' : 'Fermée'}
                                                         </span>
                                                     </div>
                                                 </div>

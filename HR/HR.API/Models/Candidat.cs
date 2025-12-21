@@ -24,8 +24,12 @@ namespace HR.API.Models
 
         public DateTime AppliedDate { get; set; } = DateTime.Now;
 
+        public string Status { get; set; } = "Nouveau";
+
+        public DateTime? InterviewDate { get; set; }
+
         public int JobOfferId { get; set; }
-        
+
         [ForeignKey("JobOfferId")]
         public OffreEmploi? OffreEmploi { get; set; }
     }

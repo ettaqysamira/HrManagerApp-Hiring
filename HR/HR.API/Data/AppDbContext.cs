@@ -17,5 +17,18 @@ namespace HR.API.Data
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<OffreEmploi> OffresEmploi { get; set; }
         public DbSet<Candidat> Candidats { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.Salary)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Contract>()
+                .Property(c => c.Salary)
+                .HasColumnType("decimal(18,2)");
+        }
     }
 }

@@ -137,67 +137,36 @@ const HRDashboardOverview = () => {
 
 
 
-  const absenceData = [
-    { month: "Jan", sick: 45, vacation: 120, other: 23 },
-    { month: "Fév", sick: 52, vacation: 98, other: 18 },
-    { month: "Mar", sick: 38, vacation: 145, other: 31 },
-    { month: "Avr", sick: 41, vacation: 167, other: 25 },
-    { month: "Mai", sick: 49, vacation: 189, other: 29 },
-    { month: "Juin", sick: 36, vacation: 234, other: 22 }
-  ];
+  const absenceData = stats.AbsenceChartData && stats.AbsenceChartData.length > 0
+    ? stats.AbsenceChartData
+    : [
+      { month: "Juillet", sick: 0, vacation: 0, other: 0 },
+      { month: "Août", sick: 0, vacation: 0, other: 0 },
+      { month: "Sept", sick: 0, vacation: 0, other: 0 },
+      { month: "Oct", sick: 0, vacation: 0, other: 0 },
+      { month: "Nov", sick: 0, vacation: 0, other: 0 },
+      { month: "Déc", sick: 0, vacation: 0, other: 0 }
+    ];
 
   const recruitmentData = [
-    { name: "Candidatures reçues", value: 156 },
+    { name: "Candidatures reçues", value: stats.totalApplications },
     { name: "Entretiens planifiés", value: 45 },
     { name: "Offres envoyées", value: 12 },
     { name: "Offres acceptées", value: 8 },
     { name: "En attente", value: 23 }
   ];
 
-  const priorityActions = [
-    {
-      title: "Contrat de Jean Dupont expire dans 15 jours",
-      description: "CDI - Département IT - Renouvellement requis",
-      priority: "high",
-      dueDate: "13/12/2025",
-      category: "contract"
-    },
-    {
-      title: "Approbation de congé - Marie Martin",
-      description: "Congé annuel du 20/12/2025 au 03/01/2026 (10 jours)",
-      priority: "medium",
-      dueDate: "05/12/2025",
-      category: "leave"
-    },
-    {
-      title: "Candidat en attente - Poste Développeur Senior",
-      description: "Pierre Rousseau - Entretien final programmé",
-      priority: "high",
-      dueDate: "02/12/2025",
-      category: "recruitment"
-    },
-    {
-      title: "Formation obligatoire - Sécurité au travail",
-      description: "15 employés n\'ont pas complété la formation",
-      priority: "medium",
-      dueDate: "15/12/2025",
-      category: "training"
-    },
-    {
-      title: "Renouvellement de 3 contrats CDD",
-      description: "Département Ventes - Décision requise",
-      priority: "high",
-      dueDate: "08/12/2025",
-      category: "contract"
-    },
-    {
-      title: "Validation des congés de fin d\'année",
-      description: "23 demandes en attente d\'approbation",
-      priority: "medium",
-      dueDate: "10/12/2025",
-      category: "leave"
-    }
-  ];
+  const priorityActions = stats.PriorityActions && stats.PriorityActions.length > 0
+    ? stats.PriorityActions
+    : [
+      {
+        title: "Aucune action prioritaire",
+        description: "Tout est à jour.",
+        priority: "low",
+        dueDate: "-",
+        category: "system"
+      }
+    ];
 
   const systemStatus = [
     {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:5169/api/OffresEmploi';
+const API_URL = 'http://localhost:5076/api/OffresEmploi';
 
 const JobOfferService = {
     getAll: async () => {

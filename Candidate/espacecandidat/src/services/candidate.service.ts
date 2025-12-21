@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:5169/api/Candidats';
+const API_URL = 'http://localhost:5076/api/Candidats';
 
 const CandidateService = {
     apply: async (formData: FormData) => {

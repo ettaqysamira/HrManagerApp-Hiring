@@ -22,6 +22,18 @@ const CandidateService = {
             },
         });
         return response.data;
+    },
+
+    acceptCandidate: async (id, interviewDate) => {
+        const response = await api.put(`/Candidats/${id}/accept`, interviewDate, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    },
+
+    rejectCandidate: async (id) => {
+        const response = await api.put(`/Candidats/${id}/reject`);
+        return response.data;
     }
 };
 

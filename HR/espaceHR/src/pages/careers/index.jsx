@@ -5,7 +5,7 @@ import { Search, MapPin, Calendar, Briefcase } from 'lucide-react';
 import JobOfferService from '../../services/jobOffer.service';
 import ApplyModal from './components/ApplyModal';
 import { useToast } from "../../components/ui/use-toast";
-import Header from '../../components/navigation/Header'; // Reusing header or creating a simpler public one
+import Header from '../../components/navigation/Header'; 
 
 const Careers = () => {
     const [jobOffers, setJobOffers] = useState([]);
@@ -19,8 +19,13 @@ const Careers = () => {
         const fetchOffers = async () => {
             try {
                 setLoading(true);
-                const data = await JobOfferService.getAll();
-                setJobOffers(data.filter(offer => offer.status === 'Open'));
+                const responseData = await JobOfferService.getAll();
+                const data = Array.isArray(responseData) ? responseData : (responseData?.value || responseData?.data || []);
+
+                setJobOffers(data.filter(offer => {
+                    const status = (offer.status || offer.Status || '').toLowerCase();
+                    return ['open', 'ouverte', 'ouvert'].includes(status);
+                }));
             } catch (error) {
                 console.error("Failed to fetch job offers:", error);
             } finally {

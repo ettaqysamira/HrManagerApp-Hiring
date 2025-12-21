@@ -22,18 +22,23 @@ const Index = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const data = await JobOfferService.getAll();
-        console.log("Fetched jobs:", data);
+        const responseData = await JobOfferService.getAll();
+        console.log("Fetched jobs:", responseData);
 
-        const formattedJobs = data
-          .filter((offer: any) => offer.status === 'Open')
+        const rawData = Array.isArray(responseData) ? responseData : (responseData?.value || responseData?.data || []);
+
+        const formattedJobs = rawData
+          .filter((offer: any) => {
+            const status = (offer.status || offer.Status || '').toLowerCase();
+            return ['open', 'ouverte', 'ouvert'].includes(status);
+          })
           .map((offer: any) => ({
             id: offer.id,
-            category: "General", 
+            category: "General",
             title: offer.title,
             description: offer.description,
             location: offer.location,
-            type: "Temps plein", 
+            type: "Temps plein",
             posted: new Date(offer.postedDate).toLocaleDateString(),
             requirements: offer.requirements
           }));

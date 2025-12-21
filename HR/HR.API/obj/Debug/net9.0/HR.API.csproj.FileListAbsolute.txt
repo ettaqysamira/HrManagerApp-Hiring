@@ -293,3 +293,4 @@ C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\bin\Debug\net9.0\HR.API.runt
 C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\bin\Debug\net9.0\HR.API.pdb
 C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\obj\Debug\net9.0\HR.API.genruntimeconfig.cache
 C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\obj\Debug\net9.0\ref\HR.API.dll
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\bin\Debug\net9.0\stats_output.json

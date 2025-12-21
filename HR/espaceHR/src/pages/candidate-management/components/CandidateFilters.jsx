@@ -4,7 +4,7 @@ import Button from '../../../components/ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select2";
 import Input from '../../../components/ui/Input';
 
-const CandidateFilters = ({ filters, onFilterChange, onExport }) => {
+const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] }) => {
   const handleFilterUpdate = (key, value) => {
     onFilterChange({ ...filters, [key]: value });
   };
@@ -36,12 +36,9 @@ const CandidateFilters = ({ filters, onFilterChange, onExport }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les postes</SelectItem>
-                <SelectItem value="fullstack">Développeur Full Stack</SelectItem>
-                <SelectItem value="project-manager">Chef de Projet</SelectItem>
-                <SelectItem value="ux-designer">Designer UX/UI</SelectItem>
-                <SelectItem value="data-analyst">Analyste de Données</SelectItem>
-                <SelectItem value="mobile-dev">Développeur Mobile</SelectItem>
-                <SelectItem value="devops">DevOps Engineer</SelectItem>
+                {positions.map(pos => (
+                  <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -56,14 +53,9 @@ const CandidateFilters = ({ filters, onFilterChange, onExport }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="new">Nouveau</SelectItem>
-                <SelectItem value="screening">Screening Initial</SelectItem>
-                <SelectItem value="interview-hr">Entretien RH</SelectItem>
-                <SelectItem value="interview-tech">Entretien Technique</SelectItem>
-                <SelectItem value="interview-final">Entretien Final</SelectItem>
-                <SelectItem value="offer-sent">Offre Envoyée</SelectItem>
-                <SelectItem value="accepted">Accepté</SelectItem>
-                <SelectItem value="rejected">Rejeté</SelectItem>
+                <SelectItem value="Nouveau">Nouveau</SelectItem>
+                <SelectItem value="Accepté">Accepté</SelectItem>
+                <SelectItem value="Rejeté">Rejeté</SelectItem>
               </SelectContent>
             </Select>
           </div>

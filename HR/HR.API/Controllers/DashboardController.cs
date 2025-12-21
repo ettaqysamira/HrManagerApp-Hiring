@@ -32,6 +32,9 @@ namespace HR.API.Controllers
             var expiringContracts = await _context.Contracts.CountAsync(c => c.EndDate != null && c.EndDate <= thirtyDaysFromNow && c.Status == "Active");
             
             var totalApplications = await _context.Candidats.CountAsync();
+            var interviewsPlanned = await _context.Candidats.CountAsync(c => c.Status == "Accepté");
+            var rejectedApplications = await _context.Candidats.CountAsync(c => c.Status == "Rejeté");
+            var newApplications = totalApplications - interviewsPlanned - rejectedApplications;
             
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
             var totalPresences = await _context.Presences.CountAsync(p => p.Date >= thirtyDaysAgo);
@@ -105,6 +108,9 @@ namespace HR.API.Controllers
                 OpenPositions = openPositions,
                 ExpiringContracts = expiringContracts,
                 TotalApplications = totalApplications,
+                InterviewsPlanned = interviewsPlanned,
+                NewApplications = newApplications,
+                RejectedApplications = rejectedApplications,
                 AbsenceRate = Math.Round(absenceRate, 1),
                 PriorityActions = priorityActions,
                 AbsenceChartData = absenceChartData

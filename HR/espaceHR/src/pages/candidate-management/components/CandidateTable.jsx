@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Mail, Phone, ChevronRight } from 'lucide-react';
+import { Star, Mail, Phone, ChevronRight, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CandidateTable = ({
@@ -142,9 +142,6 @@ const CandidateTable = ({
                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2">
 
-                    <button className="p-1.5 hover:bg-muted rounded-lg">
-                      <Mail size={16} />
-                    </button>
 
                     <button
                       className="p-1.5 hover:bg-muted rounded-lg"
@@ -154,13 +151,21 @@ const CandidateTable = ({
                       <Phone size={16} />
                     </button>
 
-                    <button
-                      className="p-1.5 hover:bg-muted rounded-lg"
-                      onClick={() => onCandidateSelect(candidate)}
-                      title="Voir profil"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
+                    {candidate.resumePath && (
+                      <a
+                        href={`http://localhost:5076/uploads/resumes/${candidate.resumePath}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 hover:bg-muted rounded-lg text-primary"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Télécharger CV"
+                        download
+                      >
+                        <FileText size={16} />
+                      </a>
+                    )}
+
+
 
                   </div>
                 </td>

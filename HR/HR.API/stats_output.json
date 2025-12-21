@@ -1,0 +1,50 @@
+﻿{
+    "totalEmployees":  1,
+    "activeContracts":  1,
+    "pendingLeaveRequests":  0,
+    "openPositions":  3,
+    "expiringContracts":  0,
+    "totalApplications":  5,
+    "absenceRate":  0,
+    "priorityActions":  [
+
+                        ],
+    "absenceChartData":  [
+                             {
+                                 "month":  "juil.",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             },
+                             {
+                                 "month":  "août",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             },
+                             {
+                                 "month":  "sept.",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             },
+                             {
+                                 "month":  "oct.",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             },
+                             {
+                                 "month":  "nov.",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             },
+                             {
+                                 "month":  "déc.",
+                                 "sick":  0,
+                                 "vacation":  0,
+                                 "other":  0
+                             }
+                         ]
+}

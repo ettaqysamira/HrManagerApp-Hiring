@@ -12,6 +12,7 @@ import BulkActionsToolbar from './components/BulkActionsToolbar';
 import DecisionModal from './components/DecisionModal';
 
 import CandidateService from '../../services/candidate.service';
+import JobOfferService from '../../services/jobOffer.service';
 import { toast } from 'sonner';
 
 const CandidateManagement = () => {
@@ -19,6 +20,7 @@ const CandidateManagement = () => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [candidatesData, setCandidatesData] = useState([]);
+  const [activeOffersCount, setActiveOffersCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [decisionModal, setDecisionModal] = useState({ open: false, candidate: null, type: null });
@@ -31,11 +33,15 @@ const CandidateManagement = () => {
     skill: ''
   });
 
-  const loadCandidates = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await CandidateService.getAll();
-      const mapped = data.map(c => ({
+      const [candidates, offers] = await Promise.all([
+        CandidateService.getAll(),
+        JobOfferService.getAll()
+      ]);
+
+      const mappedCandidates = (candidates || []).map(c => ({
         ...c,
         name: c.fullName,
         applicationDate: c.appliedDate,
@@ -45,17 +51,24 @@ const CandidateManagement = () => {
         rating: 0,
         source: 'Candidature Directe'
       }));
-      setCandidatesData(mapped);
+      setCandidatesData(mappedCandidates);
+
+      const offersList = Array.isArray(offers) ? offers : (offers.value || offers.data || []);
+      const activeCount = offersList.filter(o => {
+        const s = o.status?.toLowerCase();
+        return s === 'open' || s === 'ouvert' || s === 'ouverte';
+      }).length;
+      setActiveOffersCount(activeCount);
+
     } catch (error) {
-      console.error('Error loading candidates:', error);
-      toast.error('Erreur de chargement');
+      console.error('Error loading management data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCandidates();
+    loadData();
   }, []);
 
   const handleCandidateSelect = (candidate) => {
@@ -86,7 +99,7 @@ const CandidateManagement = () => {
         toast.success(`Candidature de ${candidate.name} refusée. E-mail envoyé.`);
       }
       setDecisionModal({ open: false, candidate: null, type: null });
-      loadCandidates();
+      loadData();
     } catch (error) {
       console.error('Error processing decision:', error);
       toast.error('Erreur lors du traitement de la décision');
@@ -98,16 +111,43 @@ const CandidateManagement = () => {
   };
 
   const metricsData = [
-    { title: "Postes Actifs", value: "23", subtitle: "En recrutement", trend: "up", trendValue: "+3", icon: "Briefcase", iconColor: "var(--color-primary)" },
-    { title: "Candidatures Totales", value: candidatesData.length.toString(), subtitle: "Total", trend: "up", trendValue: "Live", icon: "Users", iconColor: "var(--color-accent)" },
-    { title: "Entretiens Planifiés", value: "45", subtitle: "Cette semaine", trend: "up", trendValue: "+12", icon: "Calendar", iconColor: "var(--color-success)" }
+    {
+      title: "Postes Actifs",
+      value: activeOffersCount.toString(),
+      subtitle: "En recrutement",
+      trend: "up",
+      trendValue: "Live",
+      icon: "Briefcase",
+      iconColor: "var(--color-primary)"
+    },
+    {
+      title: "Candidatures Totales",
+      value: candidatesData.length.toString(),
+      subtitle: "Total reçues",
+      trend: "up",
+      trendValue: "Live",
+      icon: "Users",
+      iconColor: "var(--color-accent)"
+    },
+    {
+      title: "Entretiens Planifiés",
+      value: candidatesData.filter(c => c.stage === 'Accepté').length.toString(),
+      subtitle: "Confirmés",
+      trend: "up",
+      trendValue: "Live",
+      icon: "Calendar",
+      iconColor: "var(--color-success)"
+    }
   ];
 
   const filteredCandidates = candidatesData.filter(c => {
     if (filters.status !== 'all' && c.stage !== filters.status) return false;
-    if (filters.skill && !c.skills.some(s => s.toLowerCase().includes(filters.skill.toLowerCase()))) return false;
+    if (filters.position !== 'all' && c.position !== filters.position) return false;
+    if (filters.skill && !c.skills.some(s => s.toLowerCase().includes(filters.skill.toLowerCase())) && !c.name.toLowerCase().includes(filters.skill.toLowerCase())) return false;
     return true;
   });
+
+  const uniquePositions = [...new Set(candidatesData.map(c => c.position))].filter(p => p !== 'N/A');
 
   return (
     <SidebarProvider>
@@ -129,7 +169,12 @@ const CandidateManagement = () => {
                 ))}
               </div>
 
-              <CandidateFilters filters={filters} onFilterChange={handleFilterChange} onExport={handleExportReport} />
+              <CandidateFilters
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onExport={handleExportReport}
+                positions={uniquePositions}
+              />
 
               <div className="mt-8">
                 <CandidateTable

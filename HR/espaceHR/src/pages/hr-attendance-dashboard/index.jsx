@@ -30,12 +30,8 @@ const HRAttendanceDashboard = () => {
             const presences = presenceResponse?.data || [];
 
             const report = employees.map(emp => {
-                const employeePresences = presences.filter(a => a.employeeId === emp.id || a.employeeId === emp.employeeId);
-
-                const morning = employeePresences.find(a => a.shift === 'Morning');
-                const evening = employeePresences.find(a => a.shift === 'Evening');
-
-                const isPresent = employeePresences.length > 0;
+                const morning = presences.find(a => (a.employeeId === emp.id || a.employeeId === emp.employeeId) && a.shift === 'Morning');
+                const isPresent = !!morning;
 
                 return {
                     id: emp.id,
@@ -44,7 +40,6 @@ const HRAttendanceDashboard = () => {
                     position: emp.position || 'N/A',
                     photoUrl: emp.photoUrl,
                     morning: morning ? { time: morning.time, status: morning.status, isLate: morning.isLate } : null,
-                    evening: evening ? { time: evening.time, status: evening.status, isLate: evening.isLate } : null,
                     status: isPresent ? 'Présent' : 'Absent'
                 };
             });
@@ -142,8 +137,7 @@ const HRAttendanceDashboard = () => {
                                         <tr>
                                             <th className="px-6 py-4 font-medium">Employé</th>
                                             <th className="px-6 py-4 font-medium">Département</th>
-                                            <th className="px-6 py-4 font-medium">Matin</th>
-                                            <th className="px-6 py-4 font-medium">Soir</th>
+                                            <th className="px-6 py-4 font-medium">Heure de Pointage</th>
                                             <th className="px-6 py-4 font-medium text-center">Statut</th>
                                         </tr>
                                     </thead>
@@ -200,31 +194,12 @@ const HRAttendanceDashboard = () => {
                                                                     <Icon name={row.morning.status === 'Accepted' ? 'CheckCircle' : 'XCircle'} size={12} />
                                                                     {row.morning.time.substring(0, 5)}
                                                                 </span>
-                                                                {row.morning.status === 'Rejected' && (
+                                                                {row.morning.isLate && (
                                                                     <span className="text-[10px] text-red-500 font-medium">Retard</span>
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-gray-300 text-xl mx-2">•</span>
-                                                        )}
-                                                    </td>
-
-                                                    <td className="px-6 py-4">
-                                                        {row.evening ? (
-                                                            <div className="flex flex-col items-start gap-1">
-                                                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${row.evening.status === 'Accepted'
-                                                                    ? 'bg-green-50 text-green-700 border border-green-100'
-                                                                    : 'bg-red-50 text-red-700 border border-red-100'
-                                                                    }`}>
-                                                                    <Icon name={row.evening.status === 'Accepted' ? 'CheckCircle' : 'XCircle'} size={12} />
-                                                                    {row.evening.time.substring(0, 5)}
-                                                                </span>
-                                                                {row.evening.status === 'Rejected' && (
-                                                                    <span className="text-[10px] text-red-500 font-medium">Retard</span>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-gray-300 text-xl mx-2">•</span>
+                                                            <span className="text-gray-300 italic text-xs">Pas de pointage</span>
                                                         )}
                                                     </td>
 

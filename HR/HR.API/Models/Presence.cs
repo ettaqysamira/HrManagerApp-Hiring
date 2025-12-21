@@ -13,7 +13,7 @@ namespace HR.API.Models
         public int EmployeeId { get; set; }
 
         [ForeignKey("EmployeeId")]
-        public Employee Employee { get; set; }
+        public Employee? Employee { get; set; }
 
         public DateTime Date { get; set; } = DateTime.Now;
 

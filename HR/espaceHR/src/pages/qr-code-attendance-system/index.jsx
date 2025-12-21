@@ -36,12 +36,14 @@ const QRCodeAttendanceSystem = () => {
   useEffect(() => {
     const user = AuthService.getCurrentUser();
     if (user) {
+      const qrValue = user.employeeId;
+      console.log("QR Code Content (Sync Check):", qrValue);
       setEmployeeData({
         name: `${user.firstName} ${user.lastName}`,
-        employeeId: user.id || user.employeeId,
+        employeeId: qrValue,
         department: user.department || 'Non assigné',
         position: user.role || 'Employé',
-        qrCode: user.id || user.employeeId 
+        qrCode: qrValue
       });
     }
   }, []);
@@ -126,11 +128,11 @@ const QRCodeAttendanceSystem = () => {
         const user = AuthService.getCurrentUser();
         const employeeId = user?.id || user?.employeeId;
         if (employeeId) {
-          const response = await PresenceService.getAttendances(null, employeeId);
+          const response = await PresenceService.getPresences(null, employeeId);
           if (response.data && Array.isArray(response.data)) {
             const mappedHistory = response.data.map(a => ({
               id: a.id,
-              timestamp: `${a.date.split('T')[0]}T${a.time}`, 
+              timestamp: `${a.date.split('T')[0]}T${a.time}`,
               action: 'check-in',
               location: 'Bureau',
               verified: a.status === 'Accepted',
@@ -145,7 +147,7 @@ const QRCodeAttendanceSystem = () => {
       }
     };
     fetchHistory();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const handleKeyPress = (e) => {

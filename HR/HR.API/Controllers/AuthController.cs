@@ -111,6 +111,7 @@ namespace HR.API.Controllers
                     User = new
                     {
                         employee.Id,
+                        employee.EmployeeId,
                         employee.FirstName,
                         employee.LastName,
                         employee.Login,

@@ -1,6 +1,7 @@
 using HR.API.Data;
 using HR.API.DTOs;
 using HR.API.Models;
+using HR.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +13,9 @@ namespace HR.API.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
-        private readonly Services.IEmailService _emailService;
+        private readonly IEmailService _emailService;
 
-        public CandidatsController(AppDbContext context, IWebHostEnvironment environment, Services.IEmailService emailService)
+        public CandidatsController(AppDbContext context, IWebHostEnvironment environment, IEmailService emailService)
         {
             _context = context;
             _environment = environment;

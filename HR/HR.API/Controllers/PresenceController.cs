@@ -23,76 +23,77 @@ namespace HR.API.Controllers
         [HttpPost]
         public async Task<IActionResult> ClockIn([FromBody] PresenceRequestDto request)
         {
-            if (request.QrContent != "HR_ACCESS_2024")
-            {
-                return BadRequest(new { Message = "Invalid QR Code" });
-            }
+            var qrContent = request.QrContent?.Trim();
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId != null && e.EmployeeId.ToLower() == qrContent.ToLower());
 
-            var employee = await _context.Employees.FindAsync(request.EmployeeId);
             if (employee == null)
             {
-                return NotFound(new { Message = "Employee not found" });
+                return BadRequest(new { message = "Code QR invalide ou employé non reconnu." });
             }
 
             var today = DateTime.Today;
             var existing = await _context.Presences
-                .Where(a => a.EmployeeId == request.EmployeeId && a.Date.Date == today && a.Shift == request.Shift)
+                .Where(a => a.EmployeeId == employee.Id && a.Date.Date == today)
                 .FirstOrDefaultAsync();
 
             if (existing != null)
             {
-                return BadRequest(new { Message = "Already clocked in for this shift today." });
+                return BadRequest(new { message = "Vous avez déjà pointé pour aujourd'hui." });
             }
 
             var now = DateTime.Now;
             var time = now.TimeOfDay;
-            string status = "Accepted";
-            bool isLate = false;
-            string notes = "";
-
             
-            TimeSpan morningLimit = new TimeSpan(3, 30, 0); 
-            TimeSpan eveningLimit = new TimeSpan(18, 0, 0); 
+            // TEMPORARY TEST WINDOW: 13:00 to 15:00 (Original: 08:00 to 09:00)
+            TimeSpan startLimit = new TimeSpan(13, 0, 0);
+            TimeSpan endLimit = new TimeSpan(15, 0, 0);
 
-            if (request.Shift == "Morning")
+            string status;
+            string notes = "";
+            bool isLate = false;
+
+            if (time < startLimit)
             {
-                if (time > morningLimit)
-                {
-                    status = "Rejected";
-                    notes = "Arrived after 09:30 AM";
-                }
+                status = "Rejected";
+                notes = "Trop tôt (Avant 13:00)";
             }
-            else if (request.Shift == "Evening")
+            else if (time <= endLimit)
             {
-                if (time > eveningLimit)
-                {
-                    status = "Rejected";
-                    notes = "Arrived after 06:00 PM";
-                }
+                status = "Accepted";
+                notes = "Arrivée à l'heure";
+            }
+            else
+            {
+                status = "Rejected";
+                isLate = true;
+                notes = "Retard (Après 15:00)";
             }
 
             var attendance = new Presence
             {
-                EmployeeId = request.EmployeeId,
+                EmployeeId = employee.Id,
                 Date = now,
                 Time = time,
-                Shift = request.Shift,
+                Shift = "Morning",
                 Status = status,
-                IsLate = status == "Rejected", 
+                IsLate = isLate,
                 Notes = notes
             };
-
 
             _context.Presences.Add(attendance);
             await _context.SaveChangesAsync();
 
             return Ok(new 
             { 
-                Message = status == "Accepted" ? "Check-in Successful" : "Check-in Rejected (Late)", 
-                Status = status,
-                Time = time.ToString(@"hh\:mm")
+                message = status == "Accepted" ? "Pointage réussi !" : $"Pointage refusé : {notes}", 
+                status = status,
+                time = time.ToString(@"hh\:mm"),
+                employeeName = $"{employee.FirstName} {employee.LastName}"
             });
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetPresences([FromQuery] DateTime? date, [FromQuery] int? employeeId)

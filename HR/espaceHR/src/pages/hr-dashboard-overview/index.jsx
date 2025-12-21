@@ -12,7 +12,7 @@ import RecruitmentPipeline from './components/RecruitmentPipeline';
 import PriorityActionItem from './components/PriorityActionItem';
 import SystemStatusIndicator from './components/SystemStatusIndicator';
 import FilterToolbar from './components/FilterToolbar';
-import { employeeApi, dashboardApi } from '../../services/api';
+import { employeeApi, dashboardApi, candidateApi } from '../../services/api';
 
 const HRDashboardOverview = () => {
   const navigate = useNavigate();
@@ -25,19 +25,44 @@ const HRDashboardOverview = () => {
     openPositions: 0,
     expiringContracts: 0,
     totalApplications: 0,
-    absenceRate: 0
+    absenceRate: 0,
+    interviewsPlanned: 0,
+    newApplications: 0,
+    rejectedApplications: 0
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [empRes, statsRes] = await Promise.all([
+        const [empRes, statsRes, candRes] = await Promise.all([
           employeeApi.getEmployees(),
-          dashboardApi.getStats()
+          dashboardApi.getStats(),
+          candidateApi.getCandidats()
         ]);
 
-        const employees = empRes.data;
-        setStats(statsRes.data);
+        const employees = empRes.data || [];
+        const rawStats = statsRes.data || {};
+        const candidates = candRes.data || [];
+
+        const computedInterviews = candidates.filter(c => c.status === 'Accepté').length;
+        const computedRejected = candidates.filter(c => c.status === 'Rejeté').length;
+        const computedNew = candidates.length - computedInterviews - computedRejected;
+
+        const normalizedStats = {
+          totalEmployees: rawStats.totalEmployees ?? rawStats.TotalEmployees ?? employees.length,
+          activeContracts: rawStats.activeContracts ?? rawStats.ActiveContracts ?? 0,
+          pendingLeaveRequests: rawStats.pendingLeaveRequests ?? rawStats.PendingLeaveRequests ?? 0,
+          openPositions: rawStats.openPositions ?? rawStats.OpenPositions ?? 0,
+          expiringContracts: rawStats.expiringContracts ?? rawStats.ExpiringContracts ?? 0,
+          totalApplications: candidates.length || rawStats.totalApplications || rawStats.TotalApplications || 0,
+          interviewsPlanned: computedInterviews || rawStats.interviewsPlanned || rawStats.InterviewsPlanned || 0,
+          newApplications: computedNew || rawStats.newApplications || rawStats.NewApplications || 0,
+          rejectedApplications: computedRejected || rawStats.rejectedApplications || rawStats.RejectedApplications || 0,
+          absenceRate: rawStats.absenceRate ?? rawStats.AbsenceRate ?? 0,
+          AbsenceChartData: rawStats.absenceChartData ?? rawStats.AbsenceChartData ?? [],
+          PriorityActions: rawStats.priorityActions ?? rawStats.PriorityActions ?? []
+        };
+        setStats(normalizedStats);
 
 
         const standardDepartments = ["IT", "Marketing", "Finance", "RH", "Commercial", "Production"];
@@ -125,6 +150,24 @@ const HRDashboardOverview = () => {
       iconColor: "var(--color-warning)"
     },
     {
+      title: "Entretiens",
+      value: stats.interviewsPlanned.toString(),
+      subtitle: "Planifiés",
+      trend: "neutral",
+      trendValue: "",
+      icon: "Calendar",
+      iconColor: "var(--color-success)"
+    },
+    {
+      title: "Nouveaux",
+      value: stats.newApplications.toString(),
+      subtitle: "À traiter",
+      trend: "up",
+      trendValue: "",
+      icon: "UserPlus",
+      iconColor: "var(--color-accent)"
+    },
+    {
       title: "Candidatures",
       value: stats.totalApplications.toString(),
       subtitle: "Total reçues",
@@ -148,12 +191,21 @@ const HRDashboardOverview = () => {
       { month: "Déc", sick: 0, vacation: 0, other: 0 }
     ];
 
+  useEffect(() => {
+    if (stats.totalApplications > 0) {
+      console.log("Recruitment Stats Received:", {
+        total: stats.totalApplications,
+        planned: stats.interviewsPlanned,
+        rejected: stats.rejectedApplications,
+        new: stats.newApplications
+      });
+    }
+  }, [stats]);
+
   const recruitmentData = [
-    { name: "Candidatures reçues", value: stats.totalApplications },
-    { name: "Entretiens planifiés", value: 45 },
-    { name: "Offres envoyées", value: 12 },
-    { name: "Offres acceptées", value: 8 },
-    { name: "En attente", value: 23 }
+    { name: "Entretiens planifiés", value: stats.interviewsPlanned },
+    { name: "Candidats rejetés", value: stats.rejectedApplications },
+    { name: "Nouveaux", value: stats.newApplications }
   ];
 
   const priorityActions = stats.PriorityActions && stats.PriorityActions.length > 0

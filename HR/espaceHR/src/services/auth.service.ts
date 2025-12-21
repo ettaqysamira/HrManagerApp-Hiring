@@ -3,6 +3,7 @@ export interface LoginResponse {
     token: string;
     user: {
         id: number;
+        employeeId?: string;
         firstName: string;
         lastName: string;
         login: string;
@@ -31,7 +32,8 @@ export const authService = {
             if (data.user) {
                 const normalizedUser = {
                     ...data.user,
-                    role: data.user.role || data.user.Role || "Employee"
+                    role: data.user.role || data.user.Role || "Employee",
+                    employeeId: data.user.employeeId || data.user.EmployeeId
                 };
                 data.user = normalizedUser;
             }

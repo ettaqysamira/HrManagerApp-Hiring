@@ -47,6 +47,10 @@ export const contractApi = {
     deleteContract: (id) => api.delete(`/Contracts/${id}`),
 };
 
+export const candidateApi = {
+    getCandidats: () => api.get('/Candidats'),
+};
+
 export const dashboardApi = {
     getStats: () => api.get('/Dashboard/stats'),
 };

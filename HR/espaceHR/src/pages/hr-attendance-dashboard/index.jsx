@@ -31,7 +31,8 @@ const HRAttendanceDashboard = () => {
 
             const report = employees.map(emp => {
                 const morning = presences.find(a => (a.employeeId === emp.id || a.employeeId === emp.employeeId) && a.shift === 'Morning');
-                const isPresent = !!morning;
+
+                const isPresent = morning && morning.status !== 'Absent';
 
                 return {
                     id: emp.id,

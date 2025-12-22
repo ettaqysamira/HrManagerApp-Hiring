@@ -12,7 +12,7 @@ import RecruitmentPipeline from './components/RecruitmentPipeline';
 import PriorityActionItem from './components/PriorityActionItem';
 import SystemStatusIndicator from './components/SystemStatusIndicator';
 import FilterToolbar from './components/FilterToolbar';
-import { employeeApi, dashboardApi, candidateApi } from '../../services/api';
+import { employeeApi, dashboardApi, candidateApi, presenceApi } from '../../services/api';
 
 const HRDashboardOverview = () => {
   const navigate = useNavigate();
@@ -28,25 +28,71 @@ const HRDashboardOverview = () => {
     absenceRate: 0,
     interviewsPlanned: 0,
     newApplications: 0,
-    rejectedApplications: 0
+    rejectedApplications: 0,
+    todayAbsents: 0
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [empRes, statsRes, candRes] = await Promise.all([
+        const [empRes, statsRes, candRes, presRes] = await Promise.all([
           employeeApi.getEmployees(),
           dashboardApi.getStats(),
-          candidateApi.getCandidats()
+          candidateApi.getCandidats(),
+          presenceApi.getPresences()
         ]);
 
         const employees = empRes.data || [];
         const rawStats = statsRes.data || {};
         const candidates = candRes.data || [];
+        const presences = presRes.data || [];
 
         const computedInterviews = candidates.filter(c => c.status === 'Accepté').length;
         const computedRejected = candidates.filter(c => c.status === 'Rejeté').length;
         const computedNew = candidates.length - computedInterviews - computedRejected;
+
+        
+        let totalSimulatedRecords = 0;
+        let totalAbsences = 0;
+
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          return d.toISOString().split('T')[0];
+        });
+
+        const now = new Date();
+        const hour = now.getHours();
+
+        last7Days.forEach(dateStr => {
+          const isToday = dateStr === new Date().toISOString().split('T')[0];
+          if (isToday && hour < 15) return;
+
+          employees.forEach(emp => {
+            const record = presences.find(p =>
+              (p.employeeId === emp.id || p.employeeId === emp.employeeId) &&
+              p.date.split('T')[0] === dateStr
+            );
+
+            totalSimulatedRecords++;
+            if (!record || record.status === 'Absent' || record.status === 'Rejected') {
+              totalAbsences++;
+            }
+          });
+        });
+
+        const computedAbsenceRate = totalSimulatedRecords > 0
+          ? (totalAbsences / totalSimulatedRecords) * 100
+          : 0;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayAbsents = employees.filter(emp => {
+          const record = presences.find(p =>
+            (p.employeeId === emp.id || p.employeeId === emp.employeeId) &&
+            p.date.split('T')[0] === todayStr
+          );
+          return hour >= 15 && (!record || record.status === 'Absent' || record.status === 'Rejected');
+        }).length;
 
         const normalizedStats = {
           totalEmployees: rawStats.totalEmployees ?? rawStats.TotalEmployees ?? employees.length,
@@ -58,7 +104,8 @@ const HRDashboardOverview = () => {
           interviewsPlanned: computedInterviews || rawStats.interviewsPlanned || rawStats.InterviewsPlanned || 0,
           newApplications: computedNew || rawStats.newApplications || rawStats.NewApplications || 0,
           rejectedApplications: computedRejected || rawStats.rejectedApplications || rawStats.RejectedApplications || 0,
-          absenceRate: rawStats.absenceRate ?? rawStats.AbsenceRate ?? 0,
+          absenceRate: parseFloat(computedAbsenceRate.toFixed(1)),
+          todayAbsents: todayAbsents,
           AbsenceChartData: rawStats.absenceChartData ?? rawStats.AbsenceChartData ?? [],
           PriorityActions: rawStats.priorityActions ?? rawStats.PriorityActions ?? []
         };
@@ -141,13 +188,13 @@ const HRDashboardOverview = () => {
       iconColor: "var(--color-error)"
     },
     {
-      title: "Taux d'Absence",
-      value: `${stats.absenceRate}%`,
-      subtitle: "Derniers 30 jours",
+      title: "Absents",
+      value: stats.todayAbsents.toString(),
+      subtitle: "Absences non justifiées",
       trend: "neutral",
       trendValue: "",
       icon: "UserX",
-      iconColor: "var(--color-warning)"
+      iconColor: "#ef4444"
     },
     {
       title: "Entretiens",

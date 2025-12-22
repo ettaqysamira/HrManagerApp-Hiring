@@ -36,14 +36,24 @@ namespace HR.API.Controllers
             var rejectedApplications = await _context.Candidats.CountAsync(c => c.Status == "Rejeté");
             var newApplications = totalApplications - interviewsPlanned - rejectedApplications;
             
+            try {
+                for (int i = 0; i < 7; i++) {
+                    await FillAbsencesForDate(DateTime.Today.AddDays(-i));
+                }
+            } catch {}
+
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-            var totalPresences = await _context.Presences.CountAsync(p => p.Date >= thirtyDaysAgo);
-            var rejectedPresences = await _context.Presences.CountAsync(p => p.Date >= thirtyDaysAgo && p.Status == "Rejected");
             
             double absenceRate = 0;
-            if (totalPresences > 0)
+            if (totalEmployees > 0)
             {
-                absenceRate = (double)rejectedPresences / totalPresences * 100;
+                var totalRecorded = await _context.Presences.CountAsync(p => p.Date >= thirtyDaysAgo);
+                var absentOrRejected = await _context.Presences.CountAsync(p => p.Date >= thirtyDaysAgo && (p.Status == "Rejected" || p.Status == "Absent"));
+                
+                if (totalRecorded > 0)
+                {
+                    absenceRate = (double)absentOrRejected / totalRecorded * 100;
+                }
             }
 
             var expiringSoon = await _context.Contracts
@@ -70,7 +80,7 @@ namespace HR.API.Controllers
                 })
                 .ToListAsync();
 
-            var priorityActions = expiringSoon.Cast<object>().Concat(pendingLeaves.Cast<object>()).Take(6).ToList();
+            var priorityActions = expiringSoon.AsEnumerable().Cast<object>().Concat(pendingLeaves.AsEnumerable().Cast<object>()).Take(6).ToList();
 
             var sixMonths = Enumerable.Range(0, 6)
                 .Select(i => DateTime.UtcNow.AddMonths(-i))
@@ -90,7 +100,7 @@ namespace HR.API.Controllers
                     .CountAsync(c => (c.LeaveType.Contains("Congé") || c.LeaveType.Contains("Vacation")) && c.Status == "Acceptée" && c.StartDate >= startOfMonth && c.StartDate < endOfMonth);
                 
                 var otherCount = await _context.Presences
-                    .CountAsync(p => p.Status == "Rejected" && p.Date >= startOfMonth && p.Date < endOfMonth);
+                    .CountAsync(p => (p.Status == "Rejected" || p.Status == "Absent") && p.Date >= startOfMonth && p.Date < endOfMonth);
 
                 absenceChartData.Add(new {
                     month = month.ToString("MMM"),
@@ -115,6 +125,41 @@ namespace HR.API.Controllers
                 PriorityActions = priorityActions,
                 AbsenceChartData = absenceChartData
             });
+        }
+
+        private async Task FillAbsencesForDate(DateTime date)
+        {
+            var targetDate = date.Date;
+            TimeSpan endLimit = new TimeSpan(15, 0, 0);
+
+            if (targetDate < DateTime.Today || (targetDate == DateTime.Today && DateTime.Now.TimeOfDay > endLimit))
+            {
+                var employees = await _context.Employees.ToListAsync();
+                var presencesToday = await _context.Presences
+                    .Where(p => p.Date.Date == targetDate)
+                    .Select(p => p.EmployeeId)
+                    .ToListAsync();
+
+                var missingEmployees = employees.Where(e => !presencesToday.Contains(e.Id)).ToList();
+
+                if (missingEmployees.Any())
+                {
+                    foreach (var emp in missingEmployees)
+                    {
+                        _context.Presences.Add(new Presence
+                        {
+                            EmployeeId = emp.Id,
+                            Date = targetDate,
+                            Time = endLimit,
+                            Shift = "Morning",
+                            Status = "Absent",
+                            IsLate = false,
+                            Notes = "Absence automatique (non pointé)"
+                        });
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
     }
 }

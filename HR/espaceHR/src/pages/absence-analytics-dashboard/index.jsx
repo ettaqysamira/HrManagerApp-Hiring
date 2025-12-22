@@ -202,45 +202,7 @@ const AbsenceAnalyticsDashboard = () => {
 
             <DepartmentComparison data={departmentData} />
 
-            <div className="card-elevated p-6 mt-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                Recommandations Stratégiques
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">
-                    💡 Optimisation des Politiques de Congés
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Les données montrent une augmentation de 18% des absences en décembre. Envisagez d'ajuster les politiques de congés pour mieux répartir les absences sur l'année.
-                  </p>
-                </div>
-                <div className="p-4 bg-success/5 border border-success/20 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">
-                    ✅ Programme de Bien-être
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Le département Ventes présente un taux d'absence 25% plus élevé. Un programme de bien-être ciblé pourrait réduire l'absentéisme de 15%.
-                  </p>
-                </div>
-                <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">
-                    ⚠️ Planification des Effectifs
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Les prévisions indiquent une augmentation de 12% des absences au T3. Planifiez des ressources supplémentaires ou du personnel temporaire.
-                  </p>
-                </div>
-                <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">
-                    📊 Analyse des Coûts
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Le coût total des absences a augmenté de 8%. Envisagez des mesures préventives pour réduire les coûts indirects et la perte de productivité.
-                  </p>
-                </div>
-              </div>
-            </div>
+           
           </div>
         </main>
 

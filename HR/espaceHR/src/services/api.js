@@ -51,6 +51,10 @@ export const candidateApi = {
     getCandidats: () => api.get('/Candidats'),
 };
 
+export const presenceApi = {
+    getPresences: (date, employeeId) => api.get('/Presence', { params: { date, employeeId } }),
+};
+
 export const dashboardApi = {
     getStats: () => api.get('/Dashboard/stats'),
 };

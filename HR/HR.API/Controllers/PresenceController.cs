@@ -37,7 +37,7 @@ namespace HR.API.Controllers
                 .Where(a => a.EmployeeId == employee.Id && a.Date.Date == today)
                 .FirstOrDefaultAsync();
 
-            if (existing != null)
+            if (existing != null && existing.Status != "Absent")
             {
                 return BadRequest(new { message = "Vous avez déjà pointé pour aujourd'hui." });
             }
@@ -46,8 +46,8 @@ namespace HR.API.Controllers
             var time = now.TimeOfDay;
             
             // TEMPORARY TEST WINDOW: 13:00 to 15:00 (Original: 08:00 to 09:00)
-            TimeSpan startLimit = new TimeSpan(13, 0, 0);
-            TimeSpan endLimit = new TimeSpan(15, 0, 0);
+            TimeSpan startLimit = new TimeSpan(8, 0, 0);
+            TimeSpan endLimit = new TimeSpan(9, 0, 0);
 
             string status;
             string notes = "";
@@ -70,18 +70,29 @@ namespace HR.API.Controllers
                 notes = "Retard (Après 15:00)";
             }
 
-            var attendance = new Presence
+            if (existing != null && existing.Status == "Absent")
             {
-                EmployeeId = employee.Id,
-                Date = now,
-                Time = time,
-                Shift = "Morning",
-                Status = status,
-                IsLate = isLate,
-                Notes = notes
-            };
+                existing.Time = time;
+                existing.Status = status;
+                existing.IsLate = isLate;
+                existing.Notes = notes + " (Pointé après marquage absence)";
+                _context.Presences.Update(existing);
+            }
+            else
+            {
+                var attendance = new Presence
+                {
+                    EmployeeId = employee.Id,
+                    Date = now,
+                    Time = time,
+                    Shift = "Morning",
+                    Status = status,
+                    IsLate = isLate,
+                    Notes = notes
+                };
+                _context.Presences.Add(attendance);
+            }
 
-            _context.Presences.Add(attendance);
             await _context.SaveChangesAsync();
 
             return Ok(new 
@@ -93,11 +104,53 @@ namespace HR.API.Controllers
             });
         }
 
+        private async Task FillAbsencesForDate(DateTime date)
+        {
+            var targetDate = date.Date;
+            TimeSpan endLimit = new TimeSpan(15, 0, 0);
 
+            if (targetDate < DateTime.Today || (targetDate == DateTime.Today && DateTime.Now.TimeOfDay > endLimit))
+            {
+                var employees = await _context.Employees.ToListAsync();
+                var presencesToday = await _context.Presences
+                    .Where(p => p.Date.Date == targetDate)
+                    .Select(p => p.EmployeeId)
+                    .ToListAsync();
+
+                var missingEmployees = employees.Where(e => !presencesToday.Contains(e.Id)).ToList();
+
+                if (missingEmployees.Any())
+                {
+                    foreach (var emp in missingEmployees)
+                    {
+                        _context.Presences.Add(new Presence
+                        {
+                            EmployeeId = emp.Id,
+                            Date = targetDate,
+                            Time = endLimit, 
+                            Shift = "Morning",
+                            Status = "Absent",
+                            IsLate = false,
+                            Notes = "Absence automatique (non pointé)"
+                        });
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetPresences([FromQuery] DateTime? date, [FromQuery] int? employeeId)
         {
+            if (date.HasValue)
+            {
+                await FillAbsencesForDate(date.Value);
+            }
+            else
+            {
+                await FillAbsencesForDate(DateTime.Today);
+            }
+
             var query = _context.Presences.Include(a => a.Employee).AsQueryable();
 
             if (date.HasValue)

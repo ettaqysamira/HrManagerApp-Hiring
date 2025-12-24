@@ -8,13 +8,20 @@ const Breadcrumb = () => {
 
   const routeLabels = {
     '/hr-dashboard-overview': 'Tableau de Bord',
+    '/hr-overview': 'Tableau de Bord',
     '/employee-management': 'Gestion des Employés',
     '/contract-administration': 'Administration des Contrats',
     '/leave-management-system': 'Gestion des Congés',
+    '/hr-attendance-dashboard': 'Gestion des Présences',
+    '/job-offers': 'Offres d\'Emploi',
+    '/candidate-management': 'Gestion des Candidats',
+    '/absence-analytics-dashboard': 'Analytique Absences',
+    '/notifications-center': 'Centre de Notifications',
+    '/system-settings-and-preferences': 'Paramètres Système',
   };
 
   const pathSegments = location?.pathname?.split('/')?.filter(Boolean);
-  
+
   const breadcrumbItems = pathSegments?.map((segment, index) => {
     const path = `/${pathSegments?.slice(0, index + 1)?.join('/')}`;
     return {
@@ -35,7 +42,7 @@ const Breadcrumb = () => {
   return (
     <nav className="breadcrumb px-6 py-4" aria-label="Breadcrumb">
       <div
-        className="breadcrumb-item ml-80"
+        className="breadcrumb-item"
         onClick={() => handleNavigation('/')}
         role="button"
         tabIndex={0}

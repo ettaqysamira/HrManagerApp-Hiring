@@ -32,9 +32,18 @@ export const authService = {
             if (data.user) {
                 const normalizedUser = {
                     ...data.user,
+                    name: data.user.name || (data.user.firstName && data.user.lastName ? `${data.user.firstName} ${data.user.lastName}` : (data.user.FirstName && data.user.LastName ? `${data.user.FirstName} ${data.user.LastName}` : null)),
                     role: data.user.role || data.user.Role || "Employee",
-                    employeeId: data.user.employeeId || data.user.EmployeeId
+                    employeeId: data.user.employeeId || data.user.EmployeeId,
+                    firstName: data.user.firstName || data.user.FirstName,
+                    lastName: data.user.lastName || data.user.LastName,
+                    photoUrl: data.user.photoUrl || data.user.PhotoUrl
                 };
+
+                if (!normalizedUser.name && normalizedUser.firstName) {
+                    normalizedUser.name = `${normalizedUser.firstName} ${normalizedUser.lastName || ''}`.trim();
+                }
+
                 data.user = normalizedUser;
             }
 
@@ -55,6 +64,16 @@ export const authService = {
 
     getCurrentUser() {
         const userStr = localStorage.getItem("user");
-        return userStr ? JSON.parse(userStr) : null;
+        if (!userStr) return null;
+
+        try {
+            const user = JSON.parse(userStr);
+            if (user && !user.name && user.firstName) {
+                user.name = `${user.firstName} ${user.lastName || ''}`.trim();
+            }
+            return user;
+        } catch {
+            return null;
+        }
     }
 };

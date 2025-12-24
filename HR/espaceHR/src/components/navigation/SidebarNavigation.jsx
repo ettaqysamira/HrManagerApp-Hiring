@@ -96,7 +96,6 @@ const SidebarNavigation = ({ notificationCount = 0 }) => {
         <div className="sidebar-logo2">
           <Icon name="Users" size={20} className="md:w-6 md:h-6 text-white" />
         </div>
-        <span className="sidebar-brand-text2">EmployeeSpace</span>
       </div>
       <nav className="sidebar-nav2">
         {navigationItems?.map((item) => (

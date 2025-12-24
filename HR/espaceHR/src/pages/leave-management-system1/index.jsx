@@ -12,6 +12,8 @@ import LeaveRequestModal from './components/LeaveRequestModal';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 
+import { getImageUrl, DEFAULT_AVATAR } from '../../utils/imageUtils';
+
 const LeaveManagementSystemEmployee = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -24,41 +26,86 @@ const LeaveManagementSystemEmployee = () => {
   const [leaveBalances, setLeaveBalances] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const notificationCount = 0; 
+  const notificationCount = 0;
 
   const currentUser = authService.getCurrentUser() || { name: 'Employé', role: 'Employee' };
 
   useEffect(() => {
     document.title = 'Gestion des Congés - EmployeeSpace';
-    fetchRequests();
-
-    setLeaveBalances([
-      { id: 1, type: 'Congés Payés', balance: 13, total: 25, accrualRate: '+2.08/mois', color: 'bg-blue-500', icon: 'Calendar' },
-      { id: 2, type: 'Maladie', balance: 8, total: 10, accrualRate: 'Variable', color: 'bg-red-500', icon: 'Activity' },
-      { id: 3, type: 'Sans Solde', balance: 100, total: 100, accrualRate: '-', color: 'bg-gray-500', icon: 'Clock' },
-      { id: 4, type: 'Récupération', balance: 4, total: 5, accrualRate: 'Sur demande', color: 'bg-green-500', icon: 'Timer' }
-    ]);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    await Promise.all([
+      fetchRequests(),
+      fetchBalances()
+    ]);
+  };
+
+  const fetchBalances = async () => {
+    try {
+      const response = await employeeApi.getEmployeeStats();
+      const lb = response.data?.leaveBalances || response.data?.LeaveBalances;
+
+      if (lb) {
+        const paid = lb.paid || lb.Paid || { remaining: 13, total: 25, count: 0 };
+        const sick = lb.sick || lb.Sick || { remaining: 8, total: 10, count: 0 };
+        const unpaid = lb.unpaid || lb.Unpaid || { remaining: 100, total: 100, count: 0 };
+        const recovery = lb.recovery || lb.Recovery || { remaining: 4, total: 5, count: 0 };
+
+        setLeaveBalances([
+          { id: 1, type: 'Congés Payés', balance: paid.remaining, total: paid.total, count: paid.count, accrualRate: '+2.08/mois', color: 'bg-blue-500', icon: 'Calendar' },
+          { id: 2, type: 'Maladie', balance: sick.remaining, total: sick.total, count: sick.count, accrualRate: 'Variable', color: 'bg-red-500', icon: 'Activity' },
+          { id: 3, type: 'Sans Solde', balance: unpaid.remaining, total: unpaid.total, count: unpaid.count, accrualRate: '-', color: 'bg-gray-500', icon: 'Clock' },
+          { id: 4, type: 'Récupération', balance: recovery.remaining, total: recovery.total, count: recovery.count, accrualRate: 'Sur demande', color: 'bg-green-500', icon: 'Timer' }
+        ]);
+      } else {
+        setLeaveBalances([
+          { id: 1, type: 'Congés Payés', balance: 13, total: 25, count: 0, accrualRate: '+2.08/mois', color: 'bg-blue-500', icon: 'Calendar' },
+          { id: 2, type: 'Maladie', balance: 8, total: 10, count: 0, accrualRate: 'Variable', color: 'bg-red-500', icon: 'Activity' },
+          { id: 3, type: 'Sans Solde', balance: 100, total: 100, count: 0, accrualRate: '-', color: 'bg-gray-500', icon: 'Clock' },
+          { id: 4, type: 'Récupération', balance: 4, total: 5, count: 0, accrualRate: 'Sur demande', color: 'bg-green-500', icon: 'Timer' }
+        ]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch leave balances", err);
+      setLeaveBalances([
+        { id: 1, type: 'Congés Payés', balance: 13, total: 25, count: 0, accrualRate: '+2.08/mois', color: 'bg-blue-500', icon: 'Calendar' },
+        { id: 2, type: 'Maladie', balance: 8, total: 10, count: 0, accrualRate: 'Variable', color: 'bg-red-500', icon: 'Activity' },
+        { id: 3, type: 'Sans Solde', balance: 100, total: 100, count: 0, accrualRate: '-', color: 'bg-gray-500', icon: 'Clock' },
+        { id: 4, type: 'Récupération', balance: 4, total: 5, count: 0, accrualRate: 'Sur demande', color: 'bg-green-500', icon: 'Timer' }
+      ]);
+    }
+  };
 
   const fetchRequests = async () => {
     try {
       const response = await employeeApi.getConges();
-      
-      if (response.data) {
-        const mappedRequests = response.data.map(req => ({
-          id: req.id,
-          leaveType: req.leaveType,
-          startDate: req.startDate.split('T')[0],
-          endDate: req.endDate.split('T')[0],
-          status: req.status, 
-          reason: req.reason,
-          duration: req.duration,
-          submittedDate: req.createdAt,
-          employeeName: currentUser.name, 
-          approvalProgress: req.status === 'Approuvé' ? 100 : (req.status === 'Refusé' ? 0 : 50),
-        }));
-        setLeaveRequests(mappedRequests);
-      }
+
+      const photo = currentUser?.photo || currentUser?.photoUrl || currentUser?.PhotoUrl;
+      const photoSrc = getImageUrl(photo) || DEFAULT_AVATAR;
+
+      const formatLeaveType = (type) => {
+        if (!type) return '';
+        return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      };
+
+      const mappedRequests = response.data.map(req => ({
+        id: req.id,
+        leaveType: formatLeaveType(req.leaveType),
+        startDate: req.startDate.split('T')[0],
+        endDate: req.endDate.split('T')[0],
+        status: req.status,
+        reason: req.reason,
+        duration: req.duration,
+        submittedDate: req.createdAt,
+        employeeName: currentUser.name,
+        employeeAvatar: photoSrc,
+        employeeAvatarAlt: currentUser.name,
+        department: currentUser.department || currentUser.Department || 'N/A',
+        approvalProgress: req.status === 'Approuvé' ? 100 : (req.status === 'Refusé' ? 0 : 50),
+      }));
+      setLeaveRequests(mappedRequests);
     } catch (err) {
       console.error("Failed to fetch leaves", err);
     }
@@ -79,7 +126,7 @@ const LeaveManagementSystemEmployee = () => {
         duration: requestData.duration
       };
       await employeeApi.createConge(payload);
-      fetchRequests(); 
+      fetchRequests();
       setIsModalOpen(false);
     } catch (err) {
       console.error("Failed to apply for leave", err);

@@ -21,11 +21,7 @@ const QRCodeAttendanceSystem = () => {
   useEffect(() => {
     const user = AuthService.getCurrentUser();
     if (user) {
-      setCurrentUser({
-        name: `${user.firstName} ${user.lastName}`,
-        role: user.role,
-        employeeId: user.id
-      });
+      setCurrentUser(user);
     }
   }, []);
 
@@ -133,8 +129,8 @@ const QRCodeAttendanceSystem = () => {
             const mappedHistory = response.data.map(a => ({
               id: a.id,
               timestamp: `${a.date.split('T')[0]}T${a.time}`,
-              action: 'check-in',
-              location: 'Bureau',
+              action: a.status === 'Absent' ? 'absent' : 'check-in',
+              location: a.status === 'Absent' ? '--' : 'Bureau',
               verified: a.status === 'Accepted',
               shift: a.shift,
               status: a.status

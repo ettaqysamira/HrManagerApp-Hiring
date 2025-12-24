@@ -8,6 +8,10 @@ const ContactInformationForm = ({ initialData, onSave, onCancel }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [modifiedFields, setModifiedFields] = useState(new Set());
 
+  React.useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setModifiedFields(prev => new Set([...prev, field]));

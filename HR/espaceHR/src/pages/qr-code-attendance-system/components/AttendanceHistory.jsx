@@ -17,6 +17,8 @@ const AttendanceHistory = ({ history }) => {
         return { name: 'Coffee', color: 'var(--color-warning)' };
       case 'break-end':
         return { name: 'PlayCircle', color: 'var(--color-accent)' };
+      case 'absent':
+        return { name: 'UserX', color: 'var(--color-error)' };
       default:
         return { name: 'Clock', color: 'var(--color-muted-foreground)' };
     }
@@ -32,6 +34,8 @@ const AttendanceHistory = ({ history }) => {
         return 'Début Pause';
       case 'break-end':
         return 'Fin Pause';
+      case 'absent':
+        return 'Absent';
       default:
         return action;
     }
@@ -121,8 +125,8 @@ const AttendanceHistory = ({ history }) => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`badge ${entry?.verified ? 'badge-success' : 'badge-warning'}`}>
-                      {entry?.verified ? 'Vérifié' : 'En attente'}
+                    <span className={`badge ${entry?.action === 'absent' ? 'badge-error' : entry?.verified ? 'badge-success' : 'badge-warning'}`}>
+                      {entry?.action === 'absent' ? 'Absent' : entry?.verified ? 'Vérifié' : 'En attente'}
                     </span>
                   </td>
                 </tr>

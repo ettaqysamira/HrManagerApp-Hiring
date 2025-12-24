@@ -7,6 +7,12 @@ const ProfilePhotoUpload = ({ currentPhoto, currentPhotoAlt, onPhotoChange }) =>
   const [previewUrl, setPreviewUrl] = useState(currentPhoto || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400');
   const [isUploading, setIsUploading] = useState(false);
 
+  React.useEffect(() => {
+    if (currentPhoto) {
+      setPreviewUrl(currentPhoto);
+    }
+  }, [currentPhoto]);
+
   const handleFileSelect = (event) => {
     const file = event?.target?.files?.[0];
     if (file) {

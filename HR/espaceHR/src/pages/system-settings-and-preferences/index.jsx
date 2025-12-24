@@ -16,11 +16,12 @@ const SystemSettingsContent = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const currentUser = {
-    name: "Samira ETTAQY",
-    role: "Employée",
-    email: "sophie.martin@company.fr"
-  };
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    setCurrentUser(user);
+  }, []);
 
   const [preferences, setPreferences] = useState({
     language: 'fr',
@@ -208,7 +209,7 @@ const SystemSettingsContent = () => {
               </div>
             </div>
 
-            
+
           </div>
         </div>
       </main>

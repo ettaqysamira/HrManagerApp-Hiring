@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import { useSidebar } from './SidebarNavigation';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const TopBar = ({ currentUser = null, notificationCount = 0 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -11,9 +12,14 @@ const TopBar = ({ currentUser = null, notificationCount = 0 }) => {
   const navigate = useNavigate();
   const { isCollapsed } = useSidebar();
 
-  const userInitials = currentUser?.name
-    ? currentUser?.name?.split(' ')?.map((n) => n?.[0])?.join('')?.toUpperCase()?.slice(0, 2)
+  const userName = currentUser?.name || (currentUser?.firstName && currentUser?.lastName ? `${currentUser.firstName} ${currentUser.lastName}` : (currentUser?.FirstName && currentUser?.LastName ? `${currentUser.FirstName} ${currentUser.LastName}` : 'Utilisateur'));
+
+  const userInitials = userName !== 'Utilisateur'
+    ? userName.split(' ').map((n) => n?.[0]).join('').toUpperCase().slice(0, 2)
     : 'ES';
+
+  const userPhoto = currentUser?.photo || currentUser?.photoUrl || currentUser?.PhotoUrl;
+  const userPhotoSrc = getImageUrl(userPhoto);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -117,13 +123,19 @@ const TopBar = ({ currentUser = null, notificationCount = 0 }) => {
           aria-label="Menu utilisateur"
           aria-expanded={showUserMenu}
         >
-          <div className="topbar-avatar2">{userInitials}</div>
+          <div className="topbar-avatar2 overflow-hidden flex items-center justify-center bg-primary/10">
+            {userPhotoSrc ? (
+              <img src={userPhotoSrc} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-primary font-bold">{userInitials}</span>
+            )}
+          </div>
           <div className="hidden sm:block text-left min-w-0">
             <p className="text-xs md:text-sm font-medium text-foreground truncate max-w-[120px] md:max-w-[200px]">
-              {currentUser?.name || 'Utilisateur'}
+              {userName}
             </p>
             <p className="text-[10px] md:text-xs text-muted-foreground truncate max-w-[120px] md:max-w-[200px]">
-              {currentUser?.role || 'Employé'}
+              {currentUser?.role || currentUser?.position || 'Employé'}
             </p>
           </div>
           <Icon name="ChevronDown" size={14} className="md:w-4 md:h-4 flex-shrink-0" />

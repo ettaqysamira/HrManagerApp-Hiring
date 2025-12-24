@@ -51,7 +51,7 @@ const HRDashboardOverview = () => {
         const computedRejected = candidates.filter(c => c.status === 'Rejeté').length;
         const computedNew = candidates.length - computedInterviews - computedRejected;
 
-        
+
         let totalSimulatedRecords = 0;
         let totalAbsences = 0;
 
@@ -66,7 +66,7 @@ const HRDashboardOverview = () => {
 
         last7Days.forEach(dateStr => {
           const isToday = dateStr === new Date().toISOString().split('T')[0];
-          if (isToday && hour < 15) return;
+          if (isToday && hour < 13) return;
 
           employees.forEach(emp => {
             const record = presences.find(p =>
@@ -91,7 +91,7 @@ const HRDashboardOverview = () => {
             (p.employeeId === emp.id || p.employeeId === emp.employeeId) &&
             p.date.split('T')[0] === todayStr
           );
-          return hour >= 15 && (!record || record.status === 'Absent' || record.status === 'Rejected');
+          return hour >= 13 && (!record || record.status === 'Absent' || record.status === 'Rejected');
         }).length;
 
         const normalizedStats = {

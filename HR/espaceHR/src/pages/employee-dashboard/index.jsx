@@ -9,11 +9,14 @@ import NotificationItem from './components/NotificationItem';
 import QuickActionCard from './components/QuickActionCard';
 import SystemStatusIndicator from './components/SystemStatusIndicator';
 import WelcomeBanner from './components/WelcomeBanner';
+import { dashboardApi } from '../../services/api';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [kpiData, setKpiData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState({
     name: "Employé",
     role: "Collaborateur",
@@ -53,13 +56,13 @@ const EmployeeDashboard = () => {
     };
 
     if (tokenParam) {
-      localStorage.setItem('authToken', tokenParam);
+      localStorage.setItem('token', tokenParam);
       window.history.replaceState({}, document.title, window.location.pathname);
 
       fetchUserData(tokenParam);
     } else {
       const storedUser = localStorage.getItem('user');
-      const storedToken = localStorage.getItem('authToken');
+      const storedToken = localStorage.getItem('token') || localStorage.getItem('authToken');
 
       if (storedUser) {
         try {
@@ -77,52 +80,125 @@ const EmployeeDashboard = () => {
     }
   }, []);
 
-  const kpiData = [
-    {
-      id: 1,
-      title: "Solde de Congés",
-      value: "18.5",
-      subtitle: "jours disponibles",
-      icon: "Calendar",
-      iconColor: "var(--color-primary)",
-      trend: "par rapport à l\'année dernière",
-      trendValue: "+2.5 jours",
-      trendDirection: "up"
-    },
-    {
-      id: 2,
-      title: "Absences ce Mois",
-      value: "2",
-      subtitle: "jours d\'absence",
-      icon: "CalendarOff",
-      iconColor: "var(--color-warning)",
-      trend: "par rapport au mois dernier",
-      trendValue: "-1 jour",
-      trendDirection: "down"
-    },
-    {
-      id: 3,
-      title: "Congés Approuvés",
-      value: "3",
-      subtitle: "prochains congés",
-      icon: "CheckCircle2",
-      iconColor: "var(--color-success)",
-      trend: "prochain départ",
-      trendValue: "Dans 12 jours",
-      trendDirection: "neutral"
-    },
-    {
-      id: 4,
-      title: "Série de Présence",
-      value: "45",
-      subtitle: "jours consécutifs",
-      icon: "TrendingUp",
-      iconColor: "var(--color-accent)",
-      trend: "record personnel",
-      trendValue: "Meilleure série",
-      trendDirection: "up"
-    }
-  ];
+  useEffect(() => {
+    const fetchEmployeeStats = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+
+        if (!token) {
+          console.error('No auth token found');
+          setLoading(false);
+          return;
+        }
+
+        const response = await dashboardApi.getEmployeeStats();
+        const stats = response.data;
+
+        const updatedKpiData = [
+          {
+            id: 1,
+            title: "Solde de Congés",
+            value: stats.leaveBalance.toString(),
+            subtitle: "jours disponibles",
+            icon: "Calendar",
+            iconColor: "var(--color-primary)",
+            trend: "par rapport à l'année dernière",
+            trendValue: stats.leaveBalanceTrend,
+            trendDirection: stats.leaveBalanceTrendDirection
+          },
+          {
+            id: 2,
+            title: "Absences ce Mois",
+            value: stats.absencesThisMonth.toString(),
+            subtitle: "jours d'absence",
+            icon: "CalendarOff",
+            iconColor: "var(--color-warning)",
+            trend: "par rapport au mois dernier",
+            trendValue: stats.absencesTrend > 0 ? `+${stats.absencesTrend} jour${stats.absencesTrend > 1 ? 's' : ''}` : `${stats.absencesTrend} jour${Math.abs(stats.absencesTrend) > 1 ? 's' : ''}`,
+            trendDirection: stats.absencesTrendDirection
+          },
+          {
+            id: 3,
+            title: "Congés Approuvés",
+            value: stats.approvedLeavesCount.toString(),
+            subtitle: "prochains congés",
+            icon: "CheckCircle2",
+            iconColor: "var(--color-success)",
+            trend: "prochain départ",
+            trendValue: stats.daysUntilNextLeave > 0 ? `Dans ${stats.daysUntilNextLeave} jours` : "Aucun prévu",
+            trendDirection: "neutral"
+          },
+          {
+            id: 4,
+            title: "Série de Présence",
+            value: stats.currentStreak.toString(),
+            subtitle: "jours consécutifs",
+            icon: "TrendingUp",
+            iconColor: "var(--color-accent)",
+            trend: "record personnel",
+            trendValue: stats.isRecordStreak ? "Meilleure série" : `Record: ${stats.maxStreak} jours`,
+            trendDirection: stats.isRecordStreak ? "up" : "neutral"
+          }
+        ];
+
+        setKpiData(updatedKpiData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching employee stats:", error);
+        setLoading(false);
+
+        setKpiData([
+          {
+            id: 1,
+            title: "Solde de Congés",
+            value: "0",
+            subtitle: "jours disponibles",
+            icon: "Calendar",
+            iconColor: "var(--color-primary)",
+            trend: "par rapport à l'année dernière",
+            trendValue: "+2.5 jours",
+            trendDirection: "up"
+          },
+          {
+            id: 2,
+            title: "Absences ce Mois",
+            value: "0",
+            subtitle: "jours d'absence",
+            icon: "CalendarOff",
+            iconColor: "var(--color-warning)",
+            trend: "par rapport au mois dernier",
+            trendValue: "-1 jour",
+            trendDirection: "down"
+          },
+          {
+            id: 3,
+            title: "Congés Approuvés",
+            value: "0",
+            subtitle: "prochains congés",
+            icon: "CheckCircle2",
+            iconColor: "var(--color-success)",
+            trend: "prochain départ",
+            trendValue: "Dans 12 jours",
+            trendDirection: "neutral"
+          },
+          {
+            id: 4,
+            title: "Série de Présence",
+            value: "1",
+            subtitle: "jours consécutifs",
+            icon: "TrendingUp",
+            iconColor: "var(--color-accent)",
+            trend: "record personnel",
+            trendValue: "Meilleure série",
+            trendDirection: "up"
+          }
+        ]);
+      }
+    };
+
+    fetchEmployeeStats();
+  }, []);
 
   const mockNotifications = [
     {
@@ -344,7 +420,7 @@ const EmployeeDashboard = () => {
       <div className="min-h-screen bg-background">
         <SidebarNavigation notificationCount={unreadCount} />
         <MobileNavigationMenu notificationCount={unreadCount} />
-        <TopBar currentUser={currentUser} notificationCount={unreadCount} />
+        <TopBar currentUser={localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : currentUser} notificationCount={unreadCount} />
 
         <main className="main-content">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -32,8 +32,20 @@ namespace HR.API.Migrations
                     b.Property<DateTime>("AppliedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CVTextContent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Certifications")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Education")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExtractedSkills")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
@@ -45,6 +57,18 @@ namespace HR.API.Migrations
 
                     b.Property<int>("JobOfferId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Languages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastAnalyzedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MatchingDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MatchingScore")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
@@ -61,6 +85,9 @@ namespace HR.API.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("YearsOfExperience")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -336,8 +363,23 @@ namespace HR.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("MinMatchingScore")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("MinYearsExperience")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("PostedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("RequiredEducation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequiredLanguages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequiredSkills")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Requirements")
                         .IsRequired()

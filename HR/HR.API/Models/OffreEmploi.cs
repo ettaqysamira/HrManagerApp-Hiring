@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HR.API.Models
 {
@@ -20,6 +21,13 @@ namespace HR.API.Models
 
         public DateTime PostedDate { get; set; } = DateTime.Now;
 
-        public string Status { get; set; } = "Open"; 
+        public string Status { get; set; } = "Open";
+
+        public string? RequiredSkills { get; set; }  // JSON array
+        public int? MinYearsExperience { get; set; }
+        public string? RequiredEducation { get; set; }
+        public string? RequiredLanguages { get; set; }  // JSON array
+        
+        public decimal? MinMatchingScore { get; set; } 
     }
 }

@@ -9,6 +9,10 @@ const PersonalDetailsForm = ({ initialData, onSave, onCancel }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [modifiedFields, setModifiedFields] = useState(new Set());
 
+  React.useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const genderOptions = [
     { value: 'male', label: 'Homme' },
     { value: 'female', label: 'Femme' },
@@ -159,14 +163,7 @@ const PersonalDetailsForm = ({ initialData, onSave, onCancel }) => {
           className={modifiedFields?.has('nationality') ? 'ring-2 ring-accent/20' : ''}
         />
 
-        <Input
-          label="Numéro de Sécurité Sociale"
-          type="text"
-          value={formData?.socialSecurityNumber}
-          onChange={(e) => handleChange('socialSecurityNumber', e?.target?.value)}
-          error={errors?.socialSecurityNumber}
-          className={modifiedFields?.has('socialSecurityNumber') ? 'ring-2 ring-accent/20' : ''}
-        />
+       
       </div>
       <div className="flex items-center gap-3 pt-4 border-t border-border">
         <Button

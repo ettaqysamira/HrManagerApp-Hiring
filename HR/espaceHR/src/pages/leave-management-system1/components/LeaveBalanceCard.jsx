@@ -1,9 +1,9 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 
-const LeaveBalanceCard = ({ type, balance, total, accrualRate, color, icon }) => {
+const LeaveBalanceCard = ({ type, balance, total, accrualRate, color, icon, count }) => {
   const percentage = (balance / total) * 100;
-  
+
   return (
     <div className="bg-card rounded-lg border border-border p-6 hover:shadow-md transition-shadow duration-200">
       <div className="flex items-start justify-between mb-4">
@@ -13,16 +13,22 @@ const LeaveBalanceCard = ({ type, balance, total, accrualRate, color, icon }) =>
           </div>
           <div>
             <h3 className="text-sm font-medium text-muted-foreground">{type}</h3>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {balance} <span className="text-sm font-normal text-muted-foreground">/ {total} jours</span>
-            </p>
+            <div className="mt-1">
+              <p className="text-2xl font-bold text-foreground">
+                {balance} <span className="text-sm font-normal text-muted-foreground">/ {total} jours</span>
+              </p>
+              <p className="text-xs font-medium text-primary/80 mt-1 flex items-center gap-1">
+                <Icon name="FileText" size={12} />
+                {count || 0} demande{count > 1 ? 's' : ''}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-          <div 
+          <div
             className={`h-full ${color} transition-all duration-300`}
             style={{ width: `${percentage}%` }}
           />

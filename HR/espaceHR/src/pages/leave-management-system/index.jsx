@@ -20,6 +20,8 @@ const LeaveManagementSystemHR = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [selectedRequests, setSelectedRequests] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [availabilityData, setAvailabilityData] = useState([]);
   const [filters, setFilters] = useState({ status: 'all', leaveType: 'all', search: '' });
 
   const handleFilterChange = (key, value) => {
@@ -32,92 +34,86 @@ const LeaveManagementSystemHR = () => {
 
   const leaveEvents = [];
 
-  const availabilityData = [
-    { department: 'Informatique', available: 8, total: 10, percentage: 80 },
-    { department: 'Finance', available: 5, total: 5, percentage: 100 },
-    { department: 'RH', available: 3, total: 4, percentage: 75 }
-  ];
-
-  const employees = [
-    {
-      id: 1,
-      name: 'Samira ETTAQY',
-      initials: 'SM',
-      department: 'Informatique',
-      balances: [
-        { type: 'Congés', used: 15, total: 25, remaining: 10, color: '#4A208A' },
-        { type: 'Maladie', used: 2, total: 10, remaining: 8, color: '#EF4444' },
-        { type: 'Personnel', used: 1, total: 5, remaining: 4, color: '#10B981' }]
-
-    },
-    {
-      id: 2,
-      name: 'Sawsan Hamzaoui',
-      initials: 'TD',
-      department: 'Finance',
-      balances: [
-        { type: 'Congés', used: 20, total: 25, remaining: 5, color: '#4A208A' },
-        { type: 'Maladie', used: 5, total: 10, remaining: 5, color: '#EF4444' },
-        { type: 'Personnel', used: 3, total: 5, remaining: 2, color: '#10B981' }]
-
-    },
-    {
-      id: 3,
-      name: 'Marie Alae',
-      initials: 'MR',
-      department: 'RH',
-      balances: [
-        { type: 'Congés', used: 10, total: 25, remaining: 15, color: '#4A208A' },
-        { type: 'Maladie', used: 1, total: 10, remaining: 9, color: '#EF4444' },
-        { type: 'Personnel', used: 0, total: 5, remaining: 5, color: '#10B981' }]
-
-    }];
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
-  const fetchRequests = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const response = await employeeApi.getConges();
-      if (response.data) {
-        const mappedRequests = response.data.map(req => ({
-          id: req.id,
-          employeeName: req.employee ? `${req.employee.firstName} ${req.employee.lastName}` : 'Employé Inconnu',
-          employeeAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1a9e8814c-1763296696290.png",
-          department: req.employee?.department || 'N/A',
-          position: req.employee?.jobTitle || 'N/A',
-          type: req.leaveType || '',
-          typeLabel: formatLeaveType(req.leaveType || ''),
-          status: (req.status || 'En attente'), 
-          startDate: (req.startDate || '').split('T')[0],
-          endDate: (req.endDate || '').split('T')[0],
-          duration: req.duration || 0,
-          reason: req.reason || '',
-          submittedDate: (req.createdAt || '').split('T')[0],
-          approverComments: null
-        }));
+      const [congesRes, employeesRes] = await Promise.all([
+        employeeApi.getConges(),
+        employeeApi.getEmployees()
+      ]);
 
-        const statusMap = {
-          "En attente": "pending",
-          "Approuvé": "approved",
-          "Refusé": "rejected",
-          "en attente": "pending",
-          "approuvé": "approved",
-          "refusé": "rejected"
+      const rawConges = congesRes.data || [];
+      const rawEmployees = employeesRes.data || [];
+      setEmployees(rawEmployees);
+
+      const statusMap = {
+        "En attente": "pending",
+        "Approuvé": "approved",
+        "Refusé": "rejected",
+        "en attente": "pending",
+        "approuvé": "approved",
+        "refusé": "rejected"
+      };
+
+      const mappedRequests = rawConges.map(req => ({
+        id: req.id,
+        employeeId: req.employeeId,
+        employeeName: req.employee ? `${req.employee.firstName} ${req.employee.lastName}` : 'Employé Inconnu',
+        employeeAvatar: (req.employee?.photoUrl || req.employee?.PhotoUrl)
+          ? ((req.employee?.photoUrl || req.employee?.PhotoUrl).startsWith('http') || (req.employee?.photoUrl || req.employee?.PhotoUrl).startsWith('data:')
+            ? (req.employee?.photoUrl || req.employee?.PhotoUrl)
+            : `http://localhost:5076/${req.employee?.photoUrl || req.employee?.PhotoUrl}`)
+          : "https://img.rocket.new/generatedImages/rocket_gen_img_1a9e8814c-1763296696290.png",
+        department: req.employee?.department || 'N/A',
+        position: req.employee?.jobTitle || 'N/A',
+        type: req.leaveType || '',
+        typeLabel: formatLeaveType(req.leaveType || ''),
+        status: statusMap[req.status] || statusMap[req.status?.toLowerCase()] || 'pending',
+        rawStatus: req.status,
+        startDate: (req.startDate || '').split('T')[0],
+        endDate: (req.endDate || '').split('T')[0],
+        duration: req.duration || 0,
+        reason: req.reason || '',
+        submittedDate: (req.createdAt || '').split('T')[0],
+        approverComments: null
+      }));
+
+      setLeaveRequests(mappedRequests);
+
+      const today = new Date().toISOString().split('T')[0];
+      const departments = [...new Set(rawEmployees.map(e => e.department || 'Non assigné'))];
+
+      const newAvailability = departments.map(dept => {
+        const deptEmployees = rawEmployees.filter(e => (e.department || 'Non assigné') === dept);
+        const total = deptEmployees.length;
+
+        const onLeaveToday = mappedRequests.filter(req => {
+          const isApproved = req.status === 'approved';
+          const isTodayInRange = today >= req.startDate && today <= req.endDate;
+          const isSameDept = req.department === dept;
+          return isApproved && isTodayInRange && isSameDept;
+        }).length;
+
+        const available = total - onLeaveToday;
+        const percentage = total > 0 ? Math.round((available / total) * 100) : 0;
+
+        return {
+          department: dept,
+          available,
+          total,
+          percentage
         };
+      });
 
-        const finalRequests = mappedRequests.map(r => ({
-          ...r,
-          status: statusMap[r.status] || statusMap[r.status?.toLowerCase()] || 'pending'
-        }));
+      setAvailabilityData(newAvailability);
 
-        setLeaveRequests(finalRequests);
-      }
     } catch (err) {
-      console.error("Failed to fetch leave requests", err);
+      console.error("Failed to fetch dashboard data", err);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const formatLeaveType = (type) => {
     if (!type) return '';
@@ -128,7 +124,7 @@ const LeaveManagementSystemHR = () => {
     try {
       await employeeApi.updateCongeStatus(requestId, "Approuvé");
       alert(`Demande ${requestId} approuvée avec succès`);
-      fetchRequests(); 
+      fetchDashboardData();
     } catch (err) {
       console.error("Error approving request", err);
       alert("Erreur lors de l'approbation");
@@ -139,7 +135,7 @@ const LeaveManagementSystemHR = () => {
     try {
       await employeeApi.updateCongeStatus(requestId, "Refusé");
       alert(`Demande ${requestId} rejetée`);
-      fetchRequests(); 
+      fetchRequests();
     } catch (err) {
       console.error("Error rejecting request", err);
       alert("Erreur lors du rejet");
@@ -232,20 +228,7 @@ const LeaveManagementSystemHR = () => {
 
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-3">
-              <div className="card-elevated p-4 mb-6">
-                <h3 className="text-sm font-semibold text-foreground mb-4">
-                  Soldes de congés
-                </h3>
-                <div className="space-y-3">
-                  {employees?.map((employee) =>
-                    <LeaveBalanceCard
-                      key={employee?.id}
-                      employee={employee}
-                      balances={employee?.balances} />
 
-                  )}
-                </div>
-              </div>
 
               <div className="card-elevated p-4">
                 <FilterPanel

@@ -99,7 +99,7 @@ export const ApplicationDialog = ({
               </Label>
               <Input
                 id="firstName"
-                placeholder="Jane"
+                placeholder="Samira"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -113,7 +113,7 @@ export const ApplicationDialog = ({
               </Label>
               <Input
                 id="lastName"
-                placeholder="Doe"
+                placeholder="ETTAQY"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -129,7 +129,7 @@ export const ApplicationDialog = ({
             <Input
               id="email"
               type="email"
-              placeholder="jane@example.com"
+              placeholder="samiraettaqy@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

@@ -32,7 +32,10 @@ const HRAttendanceDashboard = () => {
             const report = employees.map(emp => {
                 const morning = presences.find(a => (a.employeeId === emp.id || a.employeeId === emp.employeeId) && a.shift === 'Morning');
 
-                const isPresent = morning && morning.status !== 'Absent';
+                let status = 'En attente';
+                if (morning) {
+                    status = morning.status === 'Absent' ? 'Absent' : 'Présent';
+                }
 
                 return {
                     id: emp.id,
@@ -41,7 +44,7 @@ const HRAttendanceDashboard = () => {
                     position: emp.position || 'N/A',
                     photoUrl: emp.photoUrl,
                     morning: morning ? { time: morning.time, status: morning.status, isLate: morning.isLate } : null,
-                    status: isPresent ? 'Présent' : 'Absent'
+                    status: status
                 };
             });
 
@@ -207,7 +210,9 @@ const HRAttendanceDashboard = () => {
                                                     <td className="px-6 py-4 text-center">
                                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${row.status === 'Présent'
                                                             ? 'bg-green-100 text-green-700 ring-1 ring-green-600/20'
-                                                            : 'bg-red-100 text-red-700 ring-1 ring-red-600/20'
+                                                            : row.status === 'Absent'
+                                                                ? 'bg-red-100 text-red-700 ring-1 ring-red-600/20'
+                                                                : 'bg-gray-100 text-gray-700 ring-1 ring-gray-600/20'
                                                             }`}>
                                                             {row.status}
                                                         </span>

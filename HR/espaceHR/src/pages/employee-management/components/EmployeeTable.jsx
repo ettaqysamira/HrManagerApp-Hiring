@@ -28,6 +28,17 @@ const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelec
     return colors?.[status] || 'bg-muted text-muted-foreground';
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString('fr-FR');
+    } catch {
+      return dateString;
+    }
+  };
+
   const getContractStatusColor = (status) => {
     const colors = {
       'CDI': 'bg-primary/10 text-primary',
@@ -126,7 +137,7 @@ const EmployeeTable = ({ employees, selectedEmployees, onSelectEmployee, onSelec
                   <span className="text-sm text-foreground">{employee?.manager}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm text-foreground">{employee?.startDate}</span>
+                  <span className="text-sm text-foreground">{formatDate(employee?.startDate)}</span>
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(employee?.status)}`}>

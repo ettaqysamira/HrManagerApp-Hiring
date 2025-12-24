@@ -9,10 +9,7 @@ import QuickStatsCard from './components/QuickStatsCard';
 import ProfileSectionNav from './components/ProfileSectionNav';
 import PersonalDetailsForm from './components/PersonalDetailsForm';
 import ContactInformationForm from './components/ContactInformationForm';
-import EmergencyContactsForm from './components/EmergencyContactsForm';
 import BankingDetailsForm from './components/BankingDetailsForm';
-import ChangeHistoryTimeline from './components/ChangeHistoryTimeline';
-import SyncStatusCard from './components/SyncStatusCard';
 import QRCodeDisplay from '../qr-code-attendance-system/components/QRCodeDisplay';
 
 const EmployeeProfileManagement = () => {
@@ -46,11 +43,26 @@ const EmployeeProfileManagement = () => {
     return `${diffDays} jours`;
   };
 
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+      return date.toISOString().split('T')[0];
+    } catch {
+      return "";
+    }
+  };
+
   const currentUser = {
     name: userData ? `${userData.firstName} ${userData.lastName}` : "Employé",
     role: userData?.position || "Collaborateur",
     email: userData?.email || "",
-    photo: userData?.photoUrl || null,
+    photo: (userData?.photoUrl || userData?.PhotoUrl)
+      ? ((userData?.photoUrl || userData?.PhotoUrl).startsWith('http') || (userData?.photoUrl || userData?.PhotoUrl).startsWith('data:')
+        ? (userData?.photoUrl || userData?.PhotoUrl)
+        : `http://localhost:5076/${userData?.photoUrl || userData?.PhotoUrl}`)
+      : null,
     photoAlt: `Photo de ${userData?.firstName || 'profil'}`
   };
 
@@ -63,35 +75,34 @@ const EmployeeProfileManagement = () => {
   const profileSections = [
     { id: 'personal', label: 'Informations Personnelles', icon: 'User' },
     { id: 'contact', label: 'Coordonnées', icon: 'Mail' },
-    { id: 'emergency', label: 'Contacts d\'Urgence', icon: 'Phone' },
     { id: 'banking', label: 'Informations Bancaires', icon: 'CreditCard' }
   ];
 
   const personalDetailsData = {
-    firstName: userData?.firstName || "",
-    lastName: userData?.lastName || "",
-    dateOfBirth: userData?.birthDate || "",
-    placeOfBirth: "—",
-    gender: "—",
-    maritalStatus: "—",
-    nationality: "—",
-    socialSecurityNumber: "—"
+    firstName: userData?.firstName || userData?.FirstName || "",
+    lastName: userData?.lastName || userData?.LastName || "",
+    dateOfBirth: formatDateForInput(userData?.birthDate || userData?.BirthDate),
+    placeOfBirth: userData?.placeOfBirth || userData?.PlaceOfBirth || "",
+    gender: userData?.gender || userData?.Gender || "",
+    maritalStatus: userData?.maritalStatus || userData?.MaritalStatus || "",
+    nationality: userData?.nationality || userData?.Nationality || "",
+    socialSecurityNumber: userData?.socialSecurityNumber || userData?.SocialSecurityNumber || ""
   };
 
   const contactInformationData = {
-    personalEmail: userData?.email || "",
-    workEmail: userData?.email || "",
-    phoneNumber: userData?.phone || "",
-    mobileNumber: userData?.phone || "",
-    address: userData?.address || "",
-    city: "—",
-    postalCode: "—",
-    country: "—"
+    personalEmail: userData?.email || userData?.Email || "",
+    workEmail: userData?.email || userData?.Email || "",
+    phoneNumber: userData?.phone || userData?.Phone || "",
+    mobileNumber: userData?.phone || userData?.Phone || "",
+    address: userData?.address || userData?.Address || "",
+    city: "",
+    postalCode: "",
+    country: ""
   };
 
   const emergencyContactsData = [
-    { id: 1, name: "Ahmed ETTAQY", relationship: "spouse", phoneNumber: "+212 6 23 45 67 89", email: "ahmed.ettaqy@gmail.com" },
-    { id: 2, name: "Fatima Zahra ETTAQY", relationship: "parent", phoneNumber: "+212 6 34 56 78 90", email: "fz.ettaqy@gmail.com" }
+    { id: 1, name: "", relationship: "", phoneNumber: "", email: "" },
+    { id: 2, name: "", relationship: "", phoneNumber: "", email: "" }
   ];
 
   const bankingDetailsData = {
@@ -140,6 +151,7 @@ const EmployeeProfileManagement = () => {
       if (response.ok) {
         setShowSuccessMessage(true);
         const updatedUser = { ...userData, ...data };
+
         if (data.phoneNumber) updatedUser.phone = data.phoneNumber;
         if (data.personalEmail) updatedUser.email = data.personalEmail;
         if (data.dateOfBirth) updatedUser.birthDate = data.dateOfBirth;
@@ -167,8 +179,6 @@ const EmployeeProfileManagement = () => {
         return <PersonalDetailsForm initialData={personalDetailsData} onSave={handleSave} onCancel={handleCancel} />;
       case 'contact':
         return <ContactInformationForm initialData={contactInformationData} onSave={handleSave} onCancel={handleCancel} />;
-      case 'emergency':
-        return <EmergencyContactsForm initialData={emergencyContactsData} onSave={handleSave} onCancel={handleCancel} />;
       case 'banking':
         return <BankingDetailsForm initialData={bankingDetailsData} onSave={handleSave} onCancel={handleCancel} />;
       default:
@@ -240,8 +250,6 @@ const EmployeeProfileManagement = () => {
                 <div className="mb-6">
                   <QRCodeDisplay employeeData={employeeQRData} onRegenerate={() => console.log("Regenerate requested")} />
                 </div>
-                <ChangeHistoryTimeline changes={changeHistory} />
-                <SyncStatusCard syncStatus={syncStatus} />
               </div>
             </div>
           </div>

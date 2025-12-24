@@ -24,13 +24,29 @@ namespace HR.API.Controllers
         public async Task<IActionResult> ClockIn([FromBody] PresenceRequestDto request)
         {
             var qrContent = request.QrContent?.Trim();
+            if (string.IsNullOrEmpty(qrContent))
+            {
+                return BadRequest(new { message = "Le contenu du code QR est vide." });
+            }
+
+            Console.WriteLine($"[DEBUG] ClockIn Attempt - QR Content: '{qrContent}'");
+
+            var normalizedContent = qrContent.ToLowerInvariant().Replace(" ", "");
+
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.EmployeeId != null && e.EmployeeId.ToLower() == qrContent.ToLower());
+                .FirstOrDefaultAsync(e => 
+                    (e.EmployeeId != null && e.EmployeeId.ToLower().Replace(" ", "") == normalizedContent) ||
+                    (e.Login != null && e.Login.ToLower().Replace(" ", "") == normalizedContent) ||
+                    (e.Id.ToString() == qrContent)
+                );
 
             if (employee == null)
             {
+                Console.WriteLine($"[DEBUG] Employee not found for QR: '{qrContent}'");
                 return BadRequest(new { message = "Code QR invalide ou employé non reconnu." });
             }
+            
+            Console.WriteLine($"[DEBUG] Employee Found: {employee.FirstName} {employee.LastName} (ID: {employee.Id})");
 
             var today = DateTime.Today;
             var existing = await _context.Presences
@@ -46,8 +62,8 @@ namespace HR.API.Controllers
             var time = now.TimeOfDay;
             
             // TEMPORARY TEST WINDOW: 13:00 to 15:00 (Original: 08:00 to 09:00)
-            TimeSpan startLimit = new TimeSpan(8, 0, 0);
-            TimeSpan endLimit = new TimeSpan(9, 0, 0);
+            TimeSpan startLimit = new TimeSpan(04, 0, 0);
+            TimeSpan endLimit = new TimeSpan(13, 0, 0);
 
             string status;
             string notes = "";

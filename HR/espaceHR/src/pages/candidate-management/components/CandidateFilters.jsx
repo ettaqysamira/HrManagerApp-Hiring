@@ -11,22 +11,42 @@ const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] })
 
   return (
     <div className="card-elevated p-4 mb-6">
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex-1 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <Input
-                type="text"
-                placeholder="Rechercher par compétence (ex: Java, React)..."
-                className="pl-10"
-                value={filters?.skill || ''}
-                onChange={(e) => handleFilterUpdate('skill', e.target.value)}
-              />
-            </div>
+      <div className="mb-4">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Input
+            type="text"
+            placeholder="Rechercher dans le CV (Java, Python...) ou par nom"
+            className="pl-10 w-full"
+            value={filters?.searchInCv || ''}
+            onChange={(e) => handleFilterUpdate('searchInCv', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+
+        <div className="flex flex-wrap gap-3 flex-1">
+          <div className="w-full sm:w-auto min-w-[180px]">
+            <Select
+              value={filters?.minExperience?.toString()}
+              onValueChange={(value) => handleFilterUpdate('minExperience', value === 'all' ? null : parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Expérience Min" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toute expérience</SelectItem>
+                <SelectItem value="0">0+ ans</SelectItem>
+                <SelectItem value="2">2+ ans</SelectItem>
+                <SelectItem value="5">5+ ans</SelectItem>
+                <SelectItem value="8">8+ ans</SelectItem>
+                <SelectItem value="10">10+ ans</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="sm:w-48">
+          <div className="w-full sm:w-auto min-w-[180px]">
             <Select
               value={filters?.position}
               onValueChange={(value) => handleFilterUpdate('position', value)}
@@ -43,7 +63,7 @@ const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] })
             </Select>
           </div>
 
-          <div className="sm:w-48">
+          <div className="w-full sm:w-auto min-w-[180px]">
             <Select
               value={filters?.status}
               onValueChange={(value) => handleFilterUpdate('status', value)}
@@ -60,7 +80,7 @@ const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] })
             </Select>
           </div>
 
-          <div className="sm:w-48">
+          <div className="w-full sm:w-auto min-w-[180px]">
             <Select
               value={filters?.source}
               onValueChange={(value) => handleFilterUpdate('source', value)}
@@ -79,7 +99,7 @@ const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] })
             </Select>
           </div>
 
-          <div className="sm:w-48">
+          <div className="w-full sm:w-auto min-w-[180px]">
             <Select
               value={filters?.dateRange}
               onValueChange={(value) => handleFilterUpdate('dateRange', value)}
@@ -99,8 +119,8 @@ const CandidateFilters = ({ filters, onFilterChange, onExport, positions = [] })
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onExport}>
+        <div className="flex gap-2 w-full lg:w-auto">
+          <Button variant="outline" onClick={onExport} className="w-full lg:w-auto">
             <Download size={18} className="mr-2" />
             Exporter
           </Button>

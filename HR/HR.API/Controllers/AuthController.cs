@@ -24,6 +24,7 @@ namespace HR.API.Controllers
         }
 
         [HttpPost("login")]
+
         public async Task<IActionResult> Login([FromBody] AuthRequest request)
         {
             var hrUser = await _context.HRs

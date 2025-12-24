@@ -57,7 +57,7 @@ const Sidebar = () => {
       label: 'Gestion Contrats',
       path: '/contract-administration',
       icon: 'FileText',
-      badge: 3,
+      badge: null,
     },
     {
       label: 'Gestion Présence',

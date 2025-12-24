@@ -1,5 +1,6 @@
 using HR.API.Data;
 using HR.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -94,16 +95,18 @@ namespace HR.API.Controllers
                 var endOfMonth = startOfMonth.AddMonths(1);
 
                 var sickCount = await _context.Conges
-                    .CountAsync(c => (c.LeaveType.Contains("Maladie") || c.LeaveType.Contains("Sickness")) && c.Status == "Acceptée" && c.StartDate >= startOfMonth && c.StartDate < endOfMonth);
+                    .CountAsync(c => (c.LeaveType.Contains("Maladie") || c.LeaveType.Contains("maladie") || c.LeaveType.Contains("Sickness")) && 
+                                     c.Status == "Approuvé" && c.StartDate >= startOfMonth && c.StartDate < endOfMonth);
                 
                 var vacationCount = await _context.Conges
-                    .CountAsync(c => (c.LeaveType.Contains("Congé") || c.LeaveType.Contains("Vacation")) && c.Status == "Acceptée" && c.StartDate >= startOfMonth && c.StartDate < endOfMonth);
+                    .CountAsync(c => (c.LeaveType.Contains("Congé") || c.LeaveType.Contains("payes") || c.LeaveType.Contains("Vacation")) && 
+                                     c.Status == "Approuvé" && c.StartDate >= startOfMonth && c.StartDate < endOfMonth);
                 
                 var otherCount = await _context.Presences
                     .CountAsync(p => (p.Status == "Rejected" || p.Status == "Absent") && p.Date >= startOfMonth && p.Date < endOfMonth);
 
                 absenceChartData.Add(new {
-                    month = month.ToString("MMM"),
+                    month = month.ToString("MMMM", new System.Globalization.CultureInfo("fr-FR")),
                     sick = sickCount,
                     vacation = vacationCount,
                     other = otherCount
@@ -127,10 +130,127 @@ namespace HR.API.Controllers
             });
         }
 
+        [HttpGet("employee-stats")]
+        [Authorize]
+        public async Task<IActionResult> GetEmployeeStats()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var employee = await _context.Employees.FindAsync(userId);
+            if (employee == null)
+            {
+                return NotFound("Employee not found");
+            }
+
+            var totalLeaveDays = 25.0;
+            var usedLeaveDays = await _context.Conges
+                .Where(c => c.EmployeeId == userId && c.Status == "Approuvé" && c.StartDate.Year == DateTime.Now.Year)
+                .SumAsync(c => c.Duration);
+            var leaveBalance = totalLeaveDays - usedLeaveDays;
+
+            var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1);
+            var absencesThisMonth = await _context.Presences
+                .CountAsync(p => p.EmployeeId == userId && 
+                                 p.Date >= startOfMonth && 
+                                 p.Date < endOfMonth && 
+                                 (p.Status == "Absent" || p.Status == "Rejected"));
+
+            var startOfLastMonth = startOfMonth.AddMonths(-1);
+            var absencesLastMonth = await _context.Presences
+                .CountAsync(p => p.EmployeeId == userId && 
+                                 p.Date >= startOfLastMonth && 
+                                 p.Date < startOfMonth && 
+                                 (p.Status == "Absent" || p.Status == "Rejected"));
+
+            var approvedLeaves = await _context.Conges
+                .Where(c => c.EmployeeId == userId && 
+                           c.Status == "Approuvé" && 
+                           c.StartDate > DateTime.Now)
+                .OrderBy(c => c.StartDate)
+                .ToListAsync();
+
+            var nextLeave = approvedLeaves.FirstOrDefault();
+            var daysUntilNextLeave = nextLeave != null ? (nextLeave.StartDate - DateTime.Now).Days : 0;
+
+            var currentYear = DateTime.Now.Year;
+            
+            var usedPaidLeave = await _context.Conges
+                .Where(c => c.EmployeeId == userId && c.Status == "Approuvé" && c.StartDate.Year == currentYear && (c.LeaveType == "conges_payes" || c.LeaveType.Contains("Payé")))
+                .SumAsync(c => c.Duration);
+            var countPaidLeave = await _context.Conges
+                .CountAsync(c => c.EmployeeId == userId && c.StartDate.Year == currentYear && (c.LeaveType == "conges_payes" || c.LeaveType.Contains("Payé")));
+                
+            var usedSickLeave = await _context.Conges
+                .Where(c => c.EmployeeId == userId && c.Status == "Approuvé" && c.StartDate.Year == currentYear && (c.LeaveType == "conges_maladie" || c.LeaveType.Contains("Maladie")))
+                .SumAsync(c => c.Duration);
+            var countSickLeave = await _context.Conges
+                .CountAsync(c => c.EmployeeId == userId && c.StartDate.Year == currentYear && (c.LeaveType == "conges_maladie" || c.LeaveType.Contains("Maladie")));
+                
+            var usedUnpaidLeave = await _context.Conges
+                .Where(c => c.EmployeeId == userId && c.Status == "Approuvé" && c.StartDate.Year == currentYear && (c.LeaveType == "conges_sans_solde" || c.LeaveType.Contains("Sans Solde")))
+                .SumAsync(c => c.Duration);
+            var countUnpaidLeave = await _context.Conges
+                .CountAsync(c => c.EmployeeId == userId && c.StartDate.Year == currentYear && (c.LeaveType == "conges_sans_solde" || c.LeaveType.Contains("Sans Solde")));
+                
+            var usedRecoveryLeave = await _context.Conges
+                .Where(c => c.EmployeeId == userId && c.Status == "Approuvé" && c.StartDate.Year == currentYear && (c.LeaveType == "conges_recuperation" || c.LeaveType.Contains("Récupération")))
+                .SumAsync(c => c.Duration);
+            var countRecoveryLeave = await _context.Conges
+                .CountAsync(c => c.EmployeeId == userId && c.StartDate.Year == currentYear && (c.LeaveType == "conges_recuperation" || c.LeaveType.Contains("Récupération")));
+
+            var presences = await _context.Presences
+                .Where(p => p.EmployeeId == userId && p.Date <= DateTime.Now && (p.Status == "Approved" || p.Status == "Present"))
+                .OrderByDescending(p => p.Date)
+                .Take(100)
+                .ToListAsync();
+
+            int currentStreak = 0;
+            DateTime? lastCheckDate = DateTime.Now.Date;
+            
+            foreach (var presence in presences)
+            {
+                if (presence.Date.Date == lastCheckDate.Value.Date)
+                {
+                    currentStreak++;
+                    lastCheckDate = lastCheckDate.Value.AddDays(-1);
+                }
+                else if (presence.Date.Date < lastCheckDate.Value.Date.AddDays(-1))
+                {
+                    break;
+                }
+            }
+
+            return Ok(new
+            {
+                LeaveBalances = new {
+                    Paid = new { used = usedPaidLeave, total = 25.0, remaining = 25.0 - usedPaidLeave, count = countPaidLeave },
+                    Sick = new { used = usedSickLeave, total = 10.0, remaining = 10.0 - usedSickLeave, count = countSickLeave },
+                    Unpaid = new { used = usedUnpaidLeave, total = 100.0, remaining = 100.0 - usedUnpaidLeave, count = countUnpaidLeave },
+                    Recovery = new { used = usedRecoveryLeave, total = 5.0, remaining = 5.0 - usedRecoveryLeave, count = countRecoveryLeave }
+                },
+                AbsencesThisMonth = absencesThisMonth,
+                AbsencesTrend = absencesLastMonth - absencesThisMonth,
+                AbsencesTrendDirection = (absencesThisMonth < absencesLastMonth) ? "down" : (absencesThisMonth > absencesLastMonth ? "up" : "neutral"),
+                
+                ApprovedLeavesCount = approvedLeaves.Count,
+                DaysUntilNextLeave = daysUntilNextLeave,
+                NextLeaveDate = nextLeave?.StartDate.ToString("dd/MM/yyyy"),
+                
+                CurrentStreak = currentStreak,
+                MaxStreak = currentStreak,
+                IsRecordStreak = true
+            });
+        }
+
         private async Task FillAbsencesForDate(DateTime date)
         {
             var targetDate = date.Date;
-            TimeSpan endLimit = new TimeSpan(15, 0, 0);
+            TimeSpan endLimit = new TimeSpan(13, 0, 0);
 
             if (targetDate < DateTime.Today || (targetDate == DateTime.Today && DateTime.Now.TimeOfDay > endLimit))
             {

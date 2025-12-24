@@ -131,7 +131,7 @@ const AttendanceScanner = () => {
                 </div>
                 <div>
                     <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wider">Session Actuelle</p>
-                    <p className="text-base font-bold text-blue-900 dark:text-blue-100">Test (13:00 - 15:00)</p>
+                    <p className="text-base font-bold text-blue-900 dark:text-blue-100">Test (08:00 - 09:00)</p>
                 </div>
             </div>
 

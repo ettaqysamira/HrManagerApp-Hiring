@@ -76,10 +76,7 @@ export function EmployeeForm({ onClose, onSubmit }) {
       BirthDate: frontendData.birthDate ? new Date(frontendData.birthDate).toISOString() : null,
       Address: frontendData.address || null,
       Salary: parseFloat(frontendData.salary || "0"),
-      PhotoUrl: frontendData.photoUrl || null,
-      EmployeeId: `EMP${Date.now()}`,
-      CreatedAt: new Date().toISOString(),
-      UpdatedAt: null
+      PhotoUrl: frontendData.photoUrl || null
     };
   };
 

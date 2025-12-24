@@ -100,6 +100,18 @@ const CandidateTable = ({
                 <td className="p-4">
                   <p className="font-medium text-foreground">{candidate.name}</p>
                   <p className="text-xs text-muted-foreground">{candidate.email}</p>
+                  {candidate.aiSkills && candidate.aiSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {candidate.aiSkills.slice(0, 3).map((skill, idx) => (
+                        <span key={idx} className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[0.65rem] font-medium border border-blue-100">
+                          {skill}
+                        </span>
+                      ))}
+                      {candidate.aiSkills.length > 3 && (
+                        <span className="text-[0.65rem] text-muted-foreground">+{candidate.aiSkills.length - 3}</span>
+                      )}
+                    </div>
+                  )}
                 </td>
 
                 <td className="p-4 text-foreground">{candidate.position}</td>

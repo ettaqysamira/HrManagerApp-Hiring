@@ -4,6 +4,8 @@ using HR.API.Models;
 using HR.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace HR.API.Controllers
 {
@@ -14,16 +16,32 @@ namespace HR.API.Controllers
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly IEmailService _emailService;
+        private readonly ICVParserService _cvParserService;
+        private readonly IAIAnalysisService _aiAnalysisService;
+        private readonly IMatchingService _matchingService;
 
-        public CandidatsController(AppDbContext context, IWebHostEnvironment environment, IEmailService emailService)
+        public CandidatsController(
+            AppDbContext context, 
+            IWebHostEnvironment environment, 
+            IEmailService emailService,
+            ICVParserService cvParserService,
+            IAIAnalysisService aiAnalysisService,
+            IMatchingService matchingService)
         {
             _context = context;
             _environment = environment;
             _emailService = emailService;
+            _cvParserService = cvParserService;
+            _aiAnalysisService = aiAnalysisService;
+            _matchingService = matchingService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Candidat>>> GetCandidats([FromQuery] string? skill = null, [FromQuery] int? jobOfferId = null)
+        public async Task<ActionResult<IEnumerable<Candidat>>> GetCandidats(
+            [FromQuery] string? skill = null, 
+            [FromQuery] int? jobOfferId = null,
+            [FromQuery] string? searchInCv = null,
+            [FromQuery] int? minExperience = null)
         {
             var query = _context.Candidats.Include(c => c.OffreEmploi).AsQueryable();
 
@@ -37,6 +55,19 @@ namespace HR.API.Controllers
                 string lowerSkill = skill.ToLower();
                 query = query.Where(c => c.Skills.ToLower().Contains(lowerSkill) 
                                       || c.FullName.ToLower().Contains(lowerSkill));
+            }
+
+            if (!string.IsNullOrEmpty(searchInCv))
+            {
+                string lowerSearch = searchInCv.ToLower();
+                query = query.Where(c => (c.CVTextContent != null && c.CVTextContent.ToLower().Contains(lowerSearch))
+                                      || (c.ExtractedSkills != null && c.ExtractedSkills.ToLower().Contains(lowerSearch))
+                                      || (c.Skills != null && c.Skills.ToLower().Contains(lowerSearch))); 
+            }
+
+            if (minExperience.HasValue)
+            {
+                query = query.Where(c => c.YearsOfExperience >= minExperience.Value);
             }
 
             return await query.ToListAsync();
@@ -59,6 +90,8 @@ namespace HR.API.Controllers
         public async Task<ActionResult<Candidat>> Apply([FromForm] CandidatureDto candidatureDto)
         {
             string? uniqueFileName = null;
+            string? filePath = null;
+
             if (candidatureDto.Resume != null)
             {
                 string rootPath = !string.IsNullOrEmpty(_environment.WebRootPath) ? _environment.WebRootPath : _environment.ContentRootPath;
@@ -69,7 +102,7 @@ namespace HR.API.Controllers
                 }
 
                 uniqueFileName = Guid.NewGuid().ToString() + "_" + candidatureDto.Resume.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
@@ -90,6 +123,50 @@ namespace HR.API.Controllers
 
             _context.Candidats.Add(candidat);
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+            {
+                try
+                {
+                    string extractText = await _cvParserService.ExtractTextAsync(filePath);
+                    candidat.CVTextContent = extractText;
+
+                    string jobDescription = "";
+                    if (candidat.JobOfferId > 0)
+                    {
+                        var job = await _context.OffresEmploi.FindAsync(candidat.JobOfferId);
+                        if (job != null)
+                        {
+                            jobDescription = $"{job.Title} {job.Description} {job.Requirements}";
+                        }
+                    }
+
+                    var analysisResult = await _aiAnalysisService.AnalyzeCVAsync(extractText, jobDescription);
+
+                    candidat.ExtractedSkills = JsonConvert.SerializeObject(analysisResult.Skills);
+                    candidat.YearsOfExperience = analysisResult.YearsOfExperience;
+                    candidat.Education = JsonConvert.SerializeObject(analysisResult.Education);
+                    candidat.Languages = JsonConvert.SerializeObject(analysisResult.Languages);
+                    candidat.Certifications = JsonConvert.SerializeObject(analysisResult.Certifications);
+                    candidat.LastAnalyzedDate = DateTime.Now;
+
+                    await _context.SaveChangesAsync();
+
+                    if (candidat.JobOfferId > 0)
+                    {
+                        var matchingResult = await _matchingService.CalculateMatchScoreAsync(candidat.Id, candidat.JobOfferId);
+                        candidat.MatchingScore = matchingResult.TotalScore;
+                        candidat.MatchingDetails = JsonConvert.SerializeObject(matchingResult);
+                        
+                        await _context.SaveChangesAsync();
+                    }
+                    */
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur lors de l'analyse IA pour le candidat {candidat.Id}: {ex.Message}");
+                }
+            }
 
             return CreatedAtAction("GetCandidat", new { id = candidat.Id }, candidat);
         }
@@ -156,6 +233,67 @@ namespace HR.API.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPost("{id}/analyze")]
+        public async Task<ActionResult<CVAnalysisResult>> AnalyzeCV(int id)
+        {
+            var candidat = await _context.Candidats.FindAsync(id);
+            if (candidat == null) return NotFound("Candidat non trouvé");
+
+            string rootPath = !string.IsNullOrEmpty(_environment.WebRootPath) ? _environment.WebRootPath : _environment.ContentRootPath;
+            if (string.IsNullOrEmpty(candidat.ResumePath)) return NotFound("Chemin du CV manquant");
+            
+            string filePath = Path.Combine(rootPath, "uploads", "resumes", candidat.ResumePath);
+
+            if (!System.IO.File.Exists(filePath)) return NotFound("Fichier CV non trouvé");
+
+            try 
+            {
+                string extractText = await _cvParserService.ExtractTextAsync(filePath);
+                candidat.CVTextContent = extractText;
+
+                string jobDescription = "";
+                if (candidat.JobOfferId > 0)
+                {
+                    var job = await _context.OffresEmploi.FindAsync(candidat.JobOfferId);
+                    if (job != null) jobDescription = $"{job.Title} {job.Description}";
+                }
+
+                var analysisResult = await _aiAnalysisService.AnalyzeCVAsync(extractText, jobDescription);
+
+                candidat.ExtractedSkills = JsonConvert.SerializeObject(analysisResult.Skills);
+                candidat.YearsOfExperience = analysisResult.YearsOfExperience;
+                candidat.Education = JsonConvert.SerializeObject(analysisResult.Education);
+                candidat.Languages = JsonConvert.SerializeObject(analysisResult.Languages);
+                candidat.Certifications = JsonConvert.SerializeObject(analysisResult.Certifications);
+                candidat.LastAnalyzedDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                /*
+                if (candidat.JobOfferId > 0)
+                {
+                    var matchResult = await _matchingService.CalculateMatchScoreAsync(candidat.Id, candidat.JobOfferId);
+                    candidat.MatchingScore = matchResult.TotalScore;
+                    candidat.MatchingDetails = JsonConvert.SerializeObject(matchResult);
+                    await _context.SaveChangesAsync();
+                }
+                */
+
+                return Ok(analysisResult);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erreur d'analyse: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ranked")]
+        public async Task<ActionResult<List<CandidateMatchDto>>> GetRankedCandidates([FromQuery] int jobOfferId, [FromQuery] decimal? minScore = null)
+        {
+            var ranked = await _matchingService.RankCandidatesAsync(jobOfferId, minScore);
+            return Ok(ranked);
         }
     }
 }

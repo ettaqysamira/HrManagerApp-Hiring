@@ -32,5 +32,16 @@ namespace HR.API.Models
 
         [ForeignKey("JobOfferId")]
         public OffreEmploi? OffreEmploi { get; set; }
+
+        public string? ExtractedSkills { get; set; }  // json array
+        public int? YearsOfExperience { get; set; }
+        public string? Education { get; set; }
+        public string? Languages { get; set; }  // JSON array
+        public string? Certifications { get; set; }  // JSON array
+        public string? CVTextContent { get; set; }  // Extract text à partir CV
+        public DateTime? LastAnalyzedDate { get; set; }
+        
+        public decimal? MatchingScore { get; set; }  
+        public string? MatchingDetails { get; set; }  // JSON details
     }
 }

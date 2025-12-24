@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<HR.API.Services.IEmailService, HR.API.Services.EmailService>();
+builder.Services.AddScoped<HR.API.Services.ICVParserService, HR.API.Services.CVParserService>();
+builder.Services.AddScoped<HR.API.Services.IAIAnalysisService, HR.API.Services.AIAnalysisService>();
+builder.Services.AddScoped<HR.API.Services.IMatchingService, HR.API.Services.MatchingService>();
+builder.Services.AddScoped<HR.API.Services.IContractGeneratorService, HR.API.Services.ContractGeneratorService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -49,11 +54,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var contentTypeProvider = new FileExtensionContentTypeProvider();
+contentTypeProvider.Mappings[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+contentTypeProvider.Mappings[".pdf"] = "application/pdf";
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "uploads")),
-    RequestPath = "/uploads"
+    RequestPath = "/uploads",
+    ContentTypeProvider = contentTypeProvider
 });
 
 if (app.Environment.IsDevelopment())

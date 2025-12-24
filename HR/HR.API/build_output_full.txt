@@ -1,0 +1,19 @@
+﻿  Identification des projets ├á restaurer...
+  Tous les projets sont ├á jour pour la restauration.
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218013115_newmigration.cs(7,26): warning CS8981: Le nom de type 'newmigration' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218013115_newmigration.Designer.cs(15,19): warning CS8981: Le nom de type 'newmigration' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Services\ContractGeneratorService.cs(108,127): error CS1736: La valeur de param├¿tre par d├®faut pour 'justification' doit ├¬tre constante au moment de la compilation [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218222441_modification.cs(7,26): warning CS8981: Le nom de type 'modification' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218222441_modification.Designer.cs(15,19): warning CS8981: Le nom de type 'modification' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+
+├ëCHEC de la build.
+
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218013115_newmigration.cs(7,26): warning CS8981: Le nom de type 'newmigration' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218013115_newmigration.Designer.cs(15,19): warning CS8981: Le nom de type 'newmigration' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218222441_modification.cs(7,26): warning CS8981: Le nom de type 'modification' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Migrations\20251218222441_modification.Designer.cs(15,19): warning CS8981: Le nom de type 'modification' contient uniquement des caract├¿res ascii en minuscules. De tels noms peuvent devenir r├®serv├®s pour la langue. [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\Services\ContractGeneratorService.cs(108,127): error CS1736: La valeur de param├¿tre par d├®faut pour 'justification' doit ├¬tre constante au moment de la compilation [C:\Users\ASUS\Desktop\HrManagerApp+Hiring\HR\HR.API\HR.API.csproj]
+    4 Avertissement(s)
+    1 Erreur(s)
+
+Temps ├®coul├® 00:00:01.18

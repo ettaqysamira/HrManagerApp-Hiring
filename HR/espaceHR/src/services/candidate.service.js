@@ -5,6 +5,8 @@ const CandidateService = {
         let query = '/Candidats?';
         if (filters.skill) query += `skill=${encodeURIComponent(filters.skill)}&`;
         if (filters.jobOfferId) query += `jobOfferId=${filters.jobOfferId}&`;
+        if (filters.searchInCv) query += `searchInCv=${encodeURIComponent(filters.searchInCv)}&`;
+        if (filters.minExperience !== null && filters.minExperience !== undefined) query += `minExperience=${filters.minExperience}&`;
 
         const response = await api.get(query);
         return response.data;

@@ -31,6 +31,7 @@ export const employeeApi = {
     getConges: () => api.get('/Conges'),
     createConge: (data) => api.post('/Conges', data),
     updateCongeStatus: (id, status) => api.put(`/Conges/${id}/status`, { status }),
+    getEmployeeStats: () => api.get('/Dashboard/employee-stats'),
 };
 
 export const notificationApi = {
@@ -57,6 +58,7 @@ export const presenceApi = {
 
 export const dashboardApi = {
     getStats: () => api.get('/Dashboard/stats'),
+    getEmployeeStats: () => api.get('/Dashboard/employee-stats'),
 };
 
 export default api;

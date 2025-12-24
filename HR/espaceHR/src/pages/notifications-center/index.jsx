@@ -11,6 +11,7 @@ import NotificationDetailPanel from './components/NotificationDetailPanel';
 import NotificationFilterBar from './components/NotificationFilterBar';
 import BulkActionsBar from './components/BulkActionsBar';
 import { notificationApi } from '../../services/api';
+import { authService } from '../../services/auth.service';
 
 const NotificationsCenter = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -25,11 +26,13 @@ const NotificationsCenter = () => {
     dateRange: 'all'
   });
 
-  const currentUser = {
-    name: "Fatima Zahra",
-    role: "Employée RH",
-    email: "fatima.zahra@employeespace.ma"
-  };
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
 
   const categories = [
     { id: 'all', label: 'Toutes les notifications', icon: 'Inbox', unreadCount: 12 },

@@ -13,7 +13,9 @@ function Image({
       alt={alt}
       className={className}
       onError={(e) => {
-        e.target.src = "/assets/images/no_image.png"
+        const name = (alt && alt !== "Image Name") ? alt : "User";
+        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff&size=128`;
+        e.target.onError = null;
       }}
       {...props}
     />

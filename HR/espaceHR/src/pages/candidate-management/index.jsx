@@ -30,16 +30,27 @@ const CandidateManagement = () => {
     status: 'all',
     source: 'all',
     dateRange: 'all',
-    skill: ''
+    searchInCv: '',
+    minExperience: null
   });
 
   const loadData = async () => {
     try {
       setLoading(true);
       const [candidates, offers] = await Promise.all([
-        CandidateService.getAll(),
+        CandidateService.getAll(filters),
         JobOfferService.getAll()
       ]);
+
+      const safeParse = (jsonString, fallback = []) => {
+        try {
+          if (!jsonString) return fallback;
+          return JSON.parse(jsonString);
+        } catch (e) {
+          console.error("Error parsing JSON:", e);
+          return fallback;
+        }
+      };
 
       const mappedCandidates = (candidates || []).map(c => ({
         ...c,
@@ -48,8 +59,14 @@ const CandidateManagement = () => {
         position: (c.offreEmploi || c.jobOffer)?.title || 'N/A',
         skills: c.skills ? c.skills.split(',').map(s => s.trim()) : [],
         stage: c.status || 'Nouveau',
-        rating: 0,
-        source: 'Candidature Directe'
+        source: 'Candidature Directe',
+        aiSkills: safeParse(c.extractedSkills),
+        education: safeParse(c.education),
+        languages: safeParse(c.languages),
+        certifications: safeParse(c.certifications),
+        yearsOfExperience: c.yearsOfExperience || 0,
+        cvTextContent: c.cvTextContent,
+        resumePath: c.resumePath
       }));
       setCandidatesData(mappedCandidates);
 
@@ -69,7 +86,7 @@ const CandidateManagement = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filters]);
 
   const handleCandidateSelect = (candidate) => {
     setSelectedCandidate(candidate);
@@ -140,10 +157,28 @@ const CandidateManagement = () => {
     }
   ];
 
+
+
   const filteredCandidates = candidatesData.filter(c => {
-    if (filters.status !== 'all' && c.stage !== filters.status) return false;
+    if (filters.searchInCv) {
+      const search = filters.searchInCv.toLowerCase();
+      const nameMatch = c.name?.toLowerCase().includes(search);
+      const emailMatch = c.email?.toLowerCase().includes(search);
+      const skillsMatch = c.aiSkills?.some(s => s.toLowerCase().includes(search)) ||
+        c.skills?.some(s => s.toLowerCase().includes(search));
+      const cvMatch = c.cvTextContent?.toLowerCase().includes(search);
+
+      if (!nameMatch && !emailMatch && !skillsMatch && !cvMatch) return false;
+    }
+
     if (filters.position !== 'all' && c.position !== filters.position) return false;
-    if (filters.skill && !c.skills.some(s => s.toLowerCase().includes(filters.skill.toLowerCase())) && !c.name.toLowerCase().includes(filters.skill.toLowerCase())) return false;
+
+    if (filters.status !== 'all' && c.stage !== filters.status) return false;
+
+    if (filters.source !== 'all' && c.source?.toLowerCase() !== filters.source.toLowerCase()) return false;
+
+    if (filters.minExperience !== null && c.yearsOfExperience < filters.minExperience) return false;
+
     return true;
   });
 

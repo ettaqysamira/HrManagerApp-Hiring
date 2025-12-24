@@ -40,6 +40,7 @@ const EmployeeManagement = () => {
       setIsLoading(true);
       const response = await employeeApi.getEmployees();
       const mappedEmployees = response.data.map(emp => ({
+        ...emp,
         id: emp.id,
         employeeId: emp.employeeId,
         name: `${emp.firstName} ${emp.lastName}`,
@@ -47,14 +48,18 @@ const EmployeeManagement = () => {
         position: emp.position,
         contractStatus: emp.contractType,
         manager: emp.manager,
-        startDate: new Date(emp.startDate).toLocaleDateString('fr-FR'),
+        startDate: emp.startDate, 
         status: emp.status,
         email: emp.email,
         phone: emp.phone,
         birthDate: emp.birthDate,
         address: emp.address,
         salary: emp.salary,
-        avatar: emp.photoUrl || "https://github.com/shadcn.png"
+        avatar: (emp.photoUrl || emp.PhotoUrl)
+          ? ((emp.photoUrl || emp.PhotoUrl).startsWith('http') || (emp.photoUrl || emp.PhotoUrl).startsWith('data:')
+            ? (emp.photoUrl || emp.PhotoUrl)
+            : `http://localhost:5076/${emp.photoUrl || emp.PhotoUrl}`)
+          : "https://github.com/shadcn.png"
       }));
       setEmployees(mappedEmployees);
     } catch (error) {

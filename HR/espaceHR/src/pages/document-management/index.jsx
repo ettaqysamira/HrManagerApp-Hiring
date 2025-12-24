@@ -31,8 +31,13 @@ const DocumentManagement = () => {
         }
     };
 
-    const handleDownload = (contractId) => {
-        alert(`Téléchargement du contrat #${contractId} (Fonctionnalité à venir)`);
+    const handleDownload = (contract) => {
+        if (contract.documentUrl) {
+            const url = `http://localhost:5076/${contract.documentUrl}`;
+            window.open(url, '_blank');
+        } else {
+            alert("Aucun document PDF n'est associé à ce contrat.");
+        }
     };
 
     return (
@@ -40,7 +45,7 @@ const DocumentManagement = () => {
             <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
                 <SidebarNavigation />
                 <MobileNavigationMenu />
-                <TopBar currentUser={currentUser || { name: "Employé" }} />
+                <TopBar currentUser={currentUser} />
 
                 <main className="main-content">
                     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -95,11 +100,11 @@ const DocumentManagement = () => {
                                             </div>
 
                                             <button
-                                                onClick={() => handleDownload(contract.id)}
+                                                onClick={() => handleDownload(contract)}
                                                 className="w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-medium transition-colors"
                                             >
                                                 <Icon name="Download" size={18} />
-                                                Télécharger PDF
+                                                Télécharger le Contrat
                                             </button>
                                         </CardContent>
                                     </Card>

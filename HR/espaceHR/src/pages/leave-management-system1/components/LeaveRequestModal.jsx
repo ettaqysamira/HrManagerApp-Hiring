@@ -22,6 +22,7 @@ const LeaveRequestModal = ({ isOpen, onClose, onSubmit, leaveBalances }) => {
     { value: 'conges_payes', label: 'Congés Payés' },
     { value: 'conges_maladie', label: 'Congés Maladie' },
     { value: 'conges_sans_solde', label: 'Congés Sans Solde' },
+    { value: 'conges_recuperation', label: 'Récupération' },
     { value: 'conges_formation', label: 'Congés Formation' }
   ];
 

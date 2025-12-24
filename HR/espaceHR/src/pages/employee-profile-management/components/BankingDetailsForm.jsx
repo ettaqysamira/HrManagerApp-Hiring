@@ -10,6 +10,10 @@ const BankingDetailsForm = ({ initialData, onSave, onCancel }) => {
   const [modifiedFields, setModifiedFields] = useState(new Set());
   const [showSensitiveData, setShowSensitiveData] = useState(false);
 
+  React.useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setModifiedFields(prev => new Set([...prev, field]));
@@ -155,14 +159,7 @@ const BankingDetailsForm = ({ initialData, onSave, onCancel }) => {
           className={modifiedFields?.has('bic') ? 'ring-2 ring-accent/20' : ''}
         />
 
-        <Input
-          label="Adresse de la Banque"
-          type="text"
-          value={formData?.bankAddress}
-          onChange={(e) => handleChange('bankAddress', e?.target?.value)}
-          error={errors?.bankAddress}
-          className={modifiedFields?.has('bankAddress') ? 'ring-2 ring-accent/20' : ''}
-        />
+       
       </div>
       <div className="flex items-center gap-3 pt-4 border-t border-border">
         <Button

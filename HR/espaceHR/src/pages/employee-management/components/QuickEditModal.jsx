@@ -10,30 +10,40 @@ const QuickEditModal = ({ employee, onClose, onSave }) => {
     department: employee?.department || '',
     status: employee?.status || '',
     manager: employee?.manager || '',
-    username: employee?.username || '',
-    password: employee?.password || ''
+    login: employee?.login || employee?.Login || '',
+    password: employee?.password || employee?.Password || ''
   });
 
   const [showPassword, setShowPassword] = useState(false);
 
   const departmentOptions = [
-    { value: 'tech', label: 'Technologie' },
-    { value: 'hr', label: 'Ressources Humaines' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'sales', label: 'Ventes' }
+    { value: 'IT', label: 'Technologie' },
+    { value: 'RH', label: 'Ressources Humaines' },
+    { value: 'Finance', label: 'Finance' },
+    { value: 'Marketing', label: 'Marketing' },
+    { value: 'Commercial', label: 'Ventes' }
   ];
 
   const statusOptions = [
-    { value: 'active', label: 'Actif' },
-    { value: 'onLeave', label: 'En Congé' },
-    { value: 'probation', label: 'Période d\'Essai' },
-    { value: 'inactive', label: 'Inactif' }
+    { value: 'Actif', label: 'Actif' },
+    { value: 'En Congé', label: 'En Congé' },
+    { value: 'Période d\'Essai', label: 'Période d\'Essai' },
+    { value: 'Inactif', label: 'Inactif' }
   ];
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    onSave({ ...employee, ...formData });
+    const updatedUser = {
+      ...employee,
+      ...formData,
+      department: formData.department,
+      status: formData.status,
+      Department: formData.department,
+      Status: formData.status,
+      Login: formData.login,
+      Password: formData.password
+    };
+    onSave(updatedUser);
   };
 
   if (!employee) return null;
@@ -96,13 +106,13 @@ const QuickEditModal = ({ employee, onClose, onSave }) => {
                 <Icon name="Key" size={18} color="var(--color-primary)" />
                 <h3 className="text-sm font-semibold text-foreground">Identifiants de Connexion</h3>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="Nom d'utilisateur"
+                  label="Identifiant"
                   type="text"
-                  value={formData?.username}
-                  onChange={(e) => setFormData({ ...formData, username: e?.target?.value })}
+                  value={formData?.login}
+                  onChange={(e) => setFormData({ ...formData, login: e?.target?.value })}
                   required
                   icon="User"
                 />
@@ -135,9 +145,7 @@ const QuickEditModal = ({ employee, onClose, onSave }) => {
               <Icon name="AlertCircle" size={20} color="var(--color-warning)" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-warning mb-1">Modification Rapide</p>
-                <p className="text-xs text-muted-foreground">
-                  Cette action modifiera uniquement les informations de base. Pour des modifications complètes, utilisez le formulaire détaillé.
-                </p>
+
               </div>
             </div>
           </div>

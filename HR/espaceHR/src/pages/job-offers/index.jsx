@@ -16,6 +16,7 @@ const JobOfferManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedOffer, setSelectedOffer] = useState(null);
     const { toast } = useToast();
 
     const fetchJobOffers = async () => {
@@ -40,18 +41,50 @@ const JobOfferManagement = () => {
         fetchJobOffers();
     }, []);
 
-    const handleCreateSuccess = () => {
+    const handleCreateSuccess = (message = "Offre d'emploi créée avec succès.") => {
         fetchJobOffers();
         setShowCreateModal(false);
+        setSelectedOffer(null);
         toast({
             title: "Succès",
-            description: "Offre d'emploi créée avec succès.",
+            description: message,
         });
     };
 
+    const handleEdit = (offer) => {
+        setSelectedOffer(offer);
+        setShowCreateModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm("Êtes-vous sûr de vouloir supprimer cette offre ?")) {
+            try {
+                await JobOfferService.delete(id);
+                toast({
+                    title: "Succès",
+                    description: "Offre d'emploi supprimée avec succès.",
+                });
+                fetchJobOffers();
+            } catch (error) {
+                console.error("Error deleting job offer:", error);
+                toast({
+                    title: "Erreur",
+                    description: "Impossible de supprimer l'offre.",
+                    variant: "destructive",
+                });
+            }
+        }
+    };
+
+    const safeDate = (dateVal) => {
+        if (!dateVal) return "Date non spécifiée";
+        const d = new Date(dateVal);
+        return isNaN(d.getTime()) ? "Date invalide" : d.toLocaleDateString();
+    };
+
     const filteredOffers = jobOffers.filter(offer =>
-        offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.description.toLowerCase().includes(searchTerm.toLowerCase())
+        (offer.title || offer.Title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (offer.description || offer.Description || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -61,7 +94,7 @@ const JobOfferManagement = () => {
                 <Header />
                 <Breadcrumb />
                 <main className="main-content">
-                    <div className="px-6 py-6">
+                    <div className="px-6 py-6 font-sans">
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h1 className="text-3xl font-semibold text-foreground mb-2">
@@ -71,7 +104,7 @@ const JobOfferManagement = () => {
                                     Créez et gérez les offres d'emploi disponibles.
                                 </p>
                             </div>
-                            <Button onClick={() => setShowCreateModal(true)} className="bg-primary hover:bg-primary/90">
+                            <Button onClick={() => { setSelectedOffer(null); setShowCreateModal(true); }} className="bg-primary hover:bg-primary/90">
                                 <Plus className="mr-2 h-4 w-4" /> Nouvelle Offre
                             </Button>
                         </div>
@@ -97,17 +130,21 @@ const JobOfferManagement = () => {
                                 filteredOffers.map((offer) => (
                                     <div key={offer.id} className="bg-card rounded-lg border p-6 hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="text-xl font-semibold text-foreground mb-2">{offer.title}</h3>
-                                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{offer.description}</p>
-                                                <div className="flex gap-4 text-sm text-muted-foreground">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-semibold text-foreground mb-2">{offer.title || offer.Title}</h3>
+                                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{offer.description || offer.Description}</p>
+                                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                                     <div className="flex items-center">
                                                         <MapPin className="h-4 w-4 mr-1" />
-                                                        {offer.location}
+                                                        {offer.location || offer.Location}
                                                     </div>
                                                     <div className="flex items-center">
                                                         <Calendar className="h-4 w-4 mr-1" />
-                                                        {new Date(offer.postedDate).toLocaleDateString()}
+                                                        {safeDate(offer.postedDate || offer.PostedDate)}
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <Users className="h-4 w-4 mr-1" />
+                                                        {offer.minYearsExperience || offer.MinYearsExperience || 0} ans d'XP min
                                                     </div>
                                                     <div className="flex items-center">
                                                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${['open', 'ouverte'].includes((offer.status || offer.Status || '').toLowerCase()) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -116,7 +153,10 @@ const JobOfferManagement = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <Button variant="outline" size="sm">Modifier</Button>
+                                            <div className="flex gap-2 ml-4">
+                                                <Button variant="outline" size="sm" onClick={() => handleEdit(offer)}>Modifier</Button>
+                                                <Button variant="destructive" size="sm" onClick={() => handleDelete(offer.id)}>Supprimer</Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -128,7 +168,8 @@ const JobOfferManagement = () => {
                 {showCreateModal && (
                     <CreateJobOfferModal
                         open={showCreateModal}
-                        onClose={() => setShowCreateModal(false)}
+                        initialData={selectedOffer}
+                        onClose={() => { setShowCreateModal(false); setSelectedOffer(null); }}
                         onSuccess={handleCreateSuccess}
                     />
                 )}

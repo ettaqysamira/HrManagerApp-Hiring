@@ -148,8 +148,12 @@ namespace HR.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEmployee(int id, Employee employee)
         {
+            Console.WriteLine($"[DEBUG] Updating Employee ID: {id}");
+            Console.WriteLine($"[DEBUG] Received Employee: {employee.FirstName} {employee.LastName}, Login: {employee.Login}");
+
             if (id != employee.Id)
             {
+                Console.WriteLine($"[DEBUG] ID mismatch: Query ID={id}, Body ID={employee.Id}");
                 return BadRequest();
             }
 
@@ -227,6 +231,7 @@ namespace HR.API.Controllers
             return _context.Employees.Any(e => e.Id == id);
         }
     }
+
 
     public class EmployeeProfileUpdateDto
     {
